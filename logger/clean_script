@@ -1,0 +1,15 @@
+#!/bin/python3
+import sys
+
+to_replace = []
+to_replace.append(b"$Info: This file is packed with the UPX executable packer http://upx.sf.net $")
+to_replace.append(b"$Id: UPX 3.96 Copyright (C) 1996-2020 the UPX Team. All Rights Reserved. $")
+to_replace.append(b"GCC: (GNU) 10.2.0")
+to_replace.append(b"UPX!")
+
+with open(sys.argv[1], 'rb') as file :
+  filedata = file.read()
+for target in to_replace:
+    filedata = filedata.replace(target, b'\0' * len(target))
+with open(sys.argv[1], 'wb') as file:
+  file.write(filedata)

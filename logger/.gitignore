@@ -1,0 +1,6 @@
+k3yl0gg3r
+objects/
+*.o
+*gcno
+*gcda
+*txt

@@ -1,0 +1,5 @@
+sockets==1.0.0
+asciimatics==1.13.0
+pandas==1.2.1
+pwntools==4.5.0
+pwn==1.0

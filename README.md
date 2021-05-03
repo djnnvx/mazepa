@@ -2,6 +2,12 @@
 
 ![Diagram](./.github/diagram_keylogger.png)
 
+## Credits
+
+Made in collaboration with:
+- [Adina C.](https://github.com/darksailormoonlight)
+- [Nils H.](https://github.com/nilshammond)
+
 ## How can I write one of my own ?
 
 There is many steps to do a project of the sort. First, you will need to find

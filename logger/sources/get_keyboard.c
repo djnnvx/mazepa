@@ -28,16 +28,22 @@ int *get_keyboard_paths(int logfd)
 {
     struct dirent **char_devices = 0x0;
     int possible_paths = scandir(DIR_PATH, &char_devices, &is_keyboard, &alphasort);
-    int *result = 0x0;
-    char *rpath = 0x0;
+    int *result = NULL;
+    char *rpath = NULL;
 
     if (possible_paths == -1 || chdir(DIR_PATH) < 0) {
         dprintf(logfd, "Error:%s\n", strerror(errno));
-        return 0x0;
+        return NULL;
     }
 
     rpath = malloc(sizeof(char) * BUFFER_SIZE);
     result = malloc(sizeof(int) * (possible_paths + 1));
+
+    if (!rpath || !result) {
+        dprintf(logfd, "Error: could not allocate memory.\n");
+        return NULL;
+    }
+
     result[possible_paths] = -1;
 
     for (int ctr = -1; ++ctr < possible_paths;) {

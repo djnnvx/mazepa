@@ -67,6 +67,6 @@ void sigtrap_handler(int code)
 void sigchild_handler(int code)
 {
     (void)code;
-    while (waitpid(-1, 0x0, WNOHANG) > 0);
+    while (waitpid(-1, NULL, WNOHANG) > 0);
 }
 

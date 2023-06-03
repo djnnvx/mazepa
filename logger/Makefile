@@ -2,13 +2,14 @@
 #### VARIABLES #########
 ########################
 
-NAME		 	= k3yl0gg3r
-CC			 	= gcc
+NAME		 	= implant
+CC			 	= clang
 RM			 	= rm -rf
 
-INCLUDES 	 	= -I./include/
-LINK_FLAG    	=
-CFLAGS 		 	= -Wall -Wextra -O2 -static -s -fPIC
+INCLUDES 	 	= -I./includes/
+LINK_FLAG    	= -lxkbcommon
+CFLAGS 		 	= -Wall -Wextra -O2 -fPIC -Weverything
+CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-command-line-argument
 PATTERN 	 	= .c
 OBJPATTERN  	= .o
 SRC_DIR 		= ./sources
@@ -17,7 +18,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= get_keyboard.c socket.c logger.c random_functions.c
+SRC 		 	= opt.c utils.c keyboard.c logger.c
 
 ########################
 #### COMPILATION #######
@@ -53,3 +54,4 @@ fclean: clean
 re: fclean all
 
 .PHONY: all clean fclean re
+

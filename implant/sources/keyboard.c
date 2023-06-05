@@ -113,7 +113,7 @@ void fetch_available_keyboards(implant_t *instance) {
 static int parse_locale(char const *locale_fpath, implant_t *instance) {
 
     char *buffer = NULL;
-    if (ERROR == read_file(locale_fpath, &buffer, instance))
+    if (ERROR == read_file(locale_fpath, &buffer))
         return ERROR;
 
     char **tab = tabgen(buffer, '\n');

@@ -84,7 +84,7 @@ int get_locale(implant_t *);
 void fetch_available_keyboards(implant_t *);
 
 // utils.c
-int read_file(char const *, char **, implant_t *);
+int read_file(char const *, char **);
 size_t get_array_size(uint8_t **);
 char *remove_repeating_whitespaces(char *);
 void free_tab(uint8_t **);

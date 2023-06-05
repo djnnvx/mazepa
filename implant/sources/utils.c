@@ -30,14 +30,14 @@
 int read_file(char const *path, char **buffer, implant_t *instance) {
 
     int fd = open(path, O_RDONLY);
-    if (fd < 0) {
+    if (0 > fd) {
         DEBUG_LOG(instance->debug_enabled, "Could not open %s: %s", path, strerror(errno));
         return ERROR;
     }
 
      // could use fseek but stat is posix so let's use that
     struct stat st;
-    if (fstat(fd, &st) < 0) {
+    if (0 > fstat(fd, &st)) {
         DEBUG_LOG(instance->debug_enabled, "Could not call fstat on %s: %s", path, strerror(errno));
         return ERROR;
     }
@@ -110,6 +110,12 @@ char **tabgen(const char *str, char separator)
         malloc_size = get_nb_cols(&str[index_str], 0, separator);
 
         res[i] = malloc(sizeof(char) * (malloc_size + 4));
+        if (!res[i]) {
+            res[i] = NULL;
+            free_tab((uint8_t **)res);
+            return NULL;
+        }
+
         res[i] = strncpy(res[i], &str[index_str], malloc_size);
         res[i][malloc_size] = '\0';
 

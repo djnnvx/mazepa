@@ -11,12 +11,16 @@
 
 #include "implant.h"
 
+static void help_mode(char const *binary_path) {
+    printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback Port\n\t-d\tEnable debug trace\n", binary_path);
+}
+
 
 int parse_user_input(int ac, char **av, implant_t *settings) {
     int c = 0;
 
     do {
-        c = getopt(ac, av, "i:p:d");
+        c = getopt(ac, av, "i:p:dh");
         switch (c) {
             case 'i':
                 /* we got an IP address */
@@ -32,7 +36,13 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
                  settings->debug_enabled = 1;
                  break;
 
+            case 'h':
+                 help_mode(av[0]);
+                 exit(0);
+                 // will exit on help_mode() anyway
+
             case '?':
+                 help_mode(av[0]);
                  return ERROR;
 
             default:

@@ -12,7 +12,7 @@
 #include "implant.h"
 
 static void help_mode(char const *binary_path) {
-    printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback Port\n\t-d\tEnable debug trace\n", binary_path);
+    printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback Port\n", binary_path);
 }
 
 
@@ -20,7 +20,7 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
     int c = 0;
 
     do {
-        c = getopt(ac, av, "i:p:dh");
+        c = getopt(ac, av, "i:p:h");
         switch (c) {
             case 'i':
                 /* we got an IP address */
@@ -30,10 +30,6 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
             case 'p':
                 /* we got a port */
                  settings->port = (unsigned short)strtoul(optarg, NULL, 0);
-                 break;
-
-            case 'd':
-                 settings->debug_enabled = 1;
                  break;
 
             case 'h':

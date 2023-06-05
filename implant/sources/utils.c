@@ -31,14 +31,18 @@ int read_file(char const *path, char **buffer, implant_t *instance) {
 
     int fd = open(path, O_RDONLY);
     if (0 > fd) {
-        DEBUG_LOG(instance->debug_enabled, "Could not open %s: %s", path, strerror(errno));
+#ifdef DEBUG
+        DEBUG_LOG("Could not open %s: %s", path, strerror(errno));
+#endif
         return ERROR;
     }
 
      // could use fseek but stat is posix so let's use that
     struct stat st;
     if (0 > fstat(fd, &st)) {
-        DEBUG_LOG(instance->debug_enabled, "Could not call fstat on %s: %s", path, strerror(errno));
+#ifdef DEBUG
+        DEBUG_LOG("Could not call fstat on %s: %s", path, strerror(errno));
+#endif
         return ERROR;
     }
 
@@ -46,20 +50,25 @@ int read_file(char const *path, char **buffer, implant_t *instance) {
 
     *buffer = malloc(sizeof(char) * (filesize + 1));
     if (!buffer || !(*buffer)) {
-        DEBUG_LOG(instance->debug_enabled, "Could not allocate memory for %s: %s", path, strerror(errno));
+#ifdef DEBUG
+        DEBUG_LOG("Could not allocate memory for %s: %s", path, strerror(errno));
+#endif
         return ERROR;
     }
 
     ssize_t bytes = read(fd, *buffer, filesize);
     if (bytes != st.st_size) {
+#ifdef DEBUG
         DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] Should have read %ld bytes but read %ld (filepath: %s)",
+                "[!] Should have read %ld bytes but read %ld (filepath: %s)",
             st.st_size, bytes, path
         );
+#endif
 
         if (bytes < 0) {
-            DEBUG_LOG(instance->debug_enabled, "read: %s", strerror(errno));
+#ifdef DEBUG
+            DEBUG_LOG("read: %s", strerror(errno));
+#endif
             return ERROR;
         }
     }

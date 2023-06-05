@@ -8,8 +8,17 @@ RM			 	= rm -rf
 
 INCLUDES 	 	= -I./includes/
 LINK_FLAG    	= -lxkbcommon
-CFLAGS 		 	= -Wall -Wextra -O2 -fPIC -Weverything
-CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-command-line-argument
+
+
+CFLAGS 			= -Wno-unused-command-line-argument -fPIC
+
+ifeq ($(MAKECMDGOALS), debug)
+	CFLAGS 			+= -g -g3 -DDebug
+else
+	CFLAGS 		 	+= -fPIC -Wall -Wextra -O2 -Weverything -Wno-padded -Wno-gnu-zero-variadic-macro-arguments
+endif
+
+
 PATTERN 	 	= .c
 OBJPATTERN  	= .o
 SRC_DIR 		= ./sources
@@ -27,31 +36,39 @@ SRC 		 	= opt.c utils.c keyboard.c logger.c
 COMBINED		= $(SRC) $(MAIN)
 OBJ 	 		= $(patsubst %$(PATTERN), $(OBJECT_DIR)/%$(OBJPATTERN), $(COMBINED))
 
-all: directories $(NAME)
+
+.PHONY: all
+all: directories $(NAME) ## generate PROD binary (you might have to run make fclean before)
+
+.PHONY: debug
+debug: directories $(NAME) ## generate DEBUG binary (you might have to run make fclean before)
+
 
 $(OBJECT_DIR):
-	@mkdir -p $@
+	@mkdir -pv $@
 
 directories: | $(OBJECT_DIR)
 
 $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
-	@$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $@ -c $< $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "Compiling $@"
 
 $(NAME): $(OBJ)
-	@$(CC) -o $(NAME) $^ $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $(NAME) $^ $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 	@strip --strip-all $(NAME)
 	@echo "[*** BINARY STRIP DONE ***]"
 
-clean:
+.PHONY: clean
+clean:  ## removes object files
 	@$(RM) objects
 
-fclean: clean
+.PHONY: fclean
+fclean: clean  ## removes all compilation artifacts
 	@$(RM) $(NAME)
 	@echo "[*** CLEAN ***]"
 
+.PHONY: re  ## cleans everything and rebuild PROD binary
 re: fclean all
 
-.PHONY: all clean fclean re
 

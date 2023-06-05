@@ -24,7 +24,7 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
         switch (c) {
             case 'i':
                 /* we got an IP address */
-                strncpy((char *)&settings->ip, optarg, 16);
+                strncpy((char *)&settings->ip, optarg, 255);
                 break;
 
             case 'p':
@@ -35,7 +35,7 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
             case 'h':
                  help_mode(av[0]);
                  exit(0);
-                 // will exit on help_mode() anyway
+                 /* will exit on help_mode() anyway */
 
             case '?':
                  help_mode(av[0]);

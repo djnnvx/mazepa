@@ -9,7 +9,12 @@
 
 int main(int ac, char **av) {
 
-    implant_t instance = {0};
+    implant_t instance = {
+        .locale = {0},
+        .ip = {0},
+        .port = 80, /* ip can be a domain name */
+    };
+
     if (ERROR == parse_user_input(ac, av, &instance))
         return 1;
 

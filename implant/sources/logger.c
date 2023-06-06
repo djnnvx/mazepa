@@ -45,7 +45,7 @@ static int log_keyboard(int fd, struct xkb_state *state) {
 
         /*
             TODO:
-                handle case where user presses on shift to add press a key
+            handle case where user presses on shift to add press a key
         */
 
         char key_description[256] = {0};

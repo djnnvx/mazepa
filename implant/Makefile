@@ -13,9 +13,10 @@ LINK_FLAG    	= -lxkbcommon
 CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 
 ifeq ($(MAKECMDGOALS), debug)
-	CFLAGS 			+= -g -g3 -DDebug
+	CFLAGS 			+= -g3 -DDEBUG
 else
-	CFLAGS 		 	+= -fPIC -Wall -Wextra -O2 -Weverything -Wno-padded -Wno-gnu-zero-variadic-macro-arguments
+	CFLAGS 		 	+= -Wall -Wextra -O2 -Weverything -Wpedantic
+	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments
 endif
 
 
@@ -42,6 +43,7 @@ all: directories $(NAME) ## generate PROD binary (you might have to run make fcl
 
 .PHONY: debug
 debug: directories $(NAME) ## generate DEBUG binary (you might have to run make fclean before)
+	@echo "[ ** DEBUG BINARY COMPILED WITH $(CFLAGS) **]"
 
 
 $(OBJECT_DIR):
@@ -50,11 +52,11 @@ $(OBJECT_DIR):
 directories: | $(OBJECT_DIR)
 
 $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
-	@$(CC) -o $@ -c $< $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "Compiling $@"
 
 $(NAME): $(OBJ)
-	@$(CC) -o $(NAME) $^ $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $(NAME) $^ $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 	@strip --strip-all $(NAME)
 	@echo "[*** BINARY STRIP DONE ***]"

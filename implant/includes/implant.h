@@ -49,7 +49,6 @@ typedef struct implant_s {
     char ip[256];
 
     /* keyboard settings */
-    char locale[20];
     TAILQ_HEAD(listhead, keyboard_s) kbd;
 
 } implant_t;
@@ -79,7 +78,6 @@ int parse_user_input(int, char **, implant_t *);
 void keylog(implant_t *);
 
 // keyboard.c
-int get_locale(implant_t *);
 void fetch_available_keyboards(implant_t *);
 
 // utils.c

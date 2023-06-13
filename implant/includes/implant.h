@@ -47,6 +47,7 @@ typedef struct implant_s {
     /* remote connection settings */
     unsigned short port;
     char ip[256];
+    int disable_net:1;
 
     /* keyboard settings */
     TAILQ_HEAD(listhead, keyboard_s) kbd;

@@ -54,6 +54,19 @@ spammed through the wire as much.
 
 ### obfuscation, anti-debug, etc...
 
+### debug mode
+
+A `debug` mode is supported out of the box, to allow for a simpler development.
+To compile a debug binary, run `make fclean && make debug` in the `./implant`
+directory.
+
+It will allow you to troubleshoot memory issues and enable some logging and nice-to-have
+features. Here is the full detail here:
+* debug logs on error (either through `perror()` or using a simple logging system)
+* add support for a `-h` argument when running the binary, that explains the usage
+* add support for a `-n` argument, that allows you NOT to setup a remote connection when running the implant
+* compile with debug flags enabled, in order to use `valgrind` etc
+
 ## credits, shoutouts, etc
 
 - [cpl0](https://cpl0.zip) & wintermute -- for providing me motivation to rework this

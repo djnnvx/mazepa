@@ -46,7 +46,7 @@ int init_remote_connection(implant_t *instance) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = htons(instance->port),
-        .sin_addr.s_addr = inet_addr(instance->ip)
+        .sin_addr.s_addr = inet_addr(instance->ip) /* FIXME(djnn): support for domain names */
     };
 
 

@@ -14,6 +14,8 @@
 static void help_mode(char const *binary_path) {
 #ifdef DEBUG
     printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback Port\n-n\tNo network connection", binary_path);
+#else
+    (void)binary_path;
 #endif
 }
 
@@ -28,7 +30,7 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
 #endif
 
     do {
-        c = getopt(ac, av, "i:p:h");
+        c = getopt(ac, av, options);
         switch (c) {
 
 #ifdef DEBUG

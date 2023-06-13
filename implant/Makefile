@@ -15,7 +15,8 @@ CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG
 else
-	CFLAGS 		 	+= -Wall -Wextra -O2 -Weverything -Wpedantic
+	CFLAGS 		 	+= -Wall -Wextra -O3 -Weverything -Wpedantic -Wl,-s
+	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s
 	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
 endif
 
@@ -40,6 +41,9 @@ OBJ 	 		= $(patsubst %$(PATTERN), $(OBJECT_DIR)/%$(OBJPATTERN), $(COMBINED))
 
 .PHONY: all
 all: directories $(NAME) ## generate PROD binary (you might have to run make fclean before)
+	@strip -s $(NAME)
+	@echo "   [*** BINARY STRIP DONE ***]"
+
 
 .PHONY: debug
 debug: directories $(NAME) ## generate DEBUG binary (you might have to run make fclean before)
@@ -57,9 +61,7 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 
 $(NAME): $(OBJ)
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
-	@echo "[*** COMPILATION SUCCESSFUL ***]"
-	@strip --strip-all $(NAME)
-	@echo "[*** BINARY STRIP DONE ***]"
+	@echo "[*** COMPILATION  SUCCESSFUL ***]"
 
 .PHONY: clean
 clean:  ## removes object files

@@ -71,6 +71,9 @@ typedef struct implant_s {
 #define KEY_PRESSED 1
 #define KEY_RELEASED 0
 
+// net.c
+int init_remote_connection(implant_t *);
+
 // opt.c
 int parse_user_input(int, char **, implant_t *);
 

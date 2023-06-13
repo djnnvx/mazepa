@@ -16,7 +16,7 @@ ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG
 else
 	CFLAGS 		 	+= -Wall -Wextra -O2 -Weverything -Wpedantic
-	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments
+	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
 endif
 
 
@@ -28,7 +28,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= opt.c utils.c keyboard.c logger.c
+SRC 		 	= opt.c utils.c keyboard.c logger.c net.c
 
 ########################
 #### COMPILATION #######

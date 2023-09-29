@@ -30,7 +30,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= opt.c utils.c keyboard.c logger.c net.c
+SRC 		 	= opt.c utils.c keyboard.c logger.c net.c daemon.c
 
 ########################
 #### COMPILATION #######

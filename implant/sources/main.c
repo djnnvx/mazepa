@@ -17,6 +17,8 @@ int main(int ac, char **av) {
     if (ERROR == parse_user_input(ac, av, &instance))
         return 1;
 
+    daemon_setup();
+
 #ifdef DEBUG
     DEBUG_LOG(
         "[*] Implant settings:\n\tIP:%s\n\tPort:%d",

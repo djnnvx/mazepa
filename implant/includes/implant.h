@@ -56,7 +56,7 @@ typedef struct implant_s {
 #define DEBUG_LOG(s, ...)                               \
     do {                                                \
         char data[256] = {0};                           \
-        if (0 < snprintf(data, 255, s, ##__VA_ARGS__))  \
+        if (0 > snprintf(data, 255, s, ##__VA_ARGS__))  \
             _exit(1);                                   \
         syslog(LOG_NOTICE, data);                       \
     } while (0)

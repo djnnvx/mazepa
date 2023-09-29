@@ -49,10 +49,49 @@ the logic of the program, and i just didnt feel like it.
 Then, I have implemented a message queue, so that reports of the keys are not
 spammed through the wire as much.
 
+### persistence
+
+You can create a `systemd` service like so, in order to have it running at
+each reboot, if you'd like.
+
+```systemd
+# Create a malicious systemd unit
+[Unit]
+Description=Keylogger
+
+[Service]
+ExecStart=/usr/bin/implant
+
+[Install]
+WantedBy=multi-user.target
+```
+
+This is a fairly common technique, as is appending in `~/.profile` or `~/.bashrc`
+a call to your keylogger.
+
+Another method is compiling the program as a dynamic library (`.so`), and abusing the
+`LD_PRELOAD` / `/etc/ld.so.preload` trick to have it being ran every time the function
+you're hooking to is being called.
+
+However, this will be left as an exercise to you. :)~
+
+
 ### communications
+
+communication is done over TCP, in plaintext. You can just have a `netcat` instance opened on
+the other hand and wait for your output, but ive added a simple python server so that you can
+save and manage multiple instances of such a keylogger.
+
+also, im planning on adding an encryption layer to the communications, im just not sure which one
+is best yet.
+
+Feel free to submit a PR about it, if you're willing.
 
 
 ### obfuscation, anti-debug, etc...
+
+In this version, nothing concrete is being done to avoid debugging, and obfuscate the
+control flow. Features are planned for this, but I want to dedicate a blog post for each.
 
 ### debug mode
 

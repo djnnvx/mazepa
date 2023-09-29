@@ -36,7 +36,7 @@ int parse_user_input(int ac, char **av, implant_t *settings) {
 #ifdef DEBUG
             /* allow debug mode not to have a remote connection for testing */
             case 'n':
-                &settings->disable_net = 1;
+                settings->disable_net = 1;
                 break;
 #endif
             case 'i':

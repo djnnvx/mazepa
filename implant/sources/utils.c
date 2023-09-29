@@ -21,9 +21,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-/*
-   just a little utility function to read a generic text file.
-*/
+
 int read_file(char const *path, char **buffer) {
 
     int fd = open(path, O_RDONLY);
@@ -34,7 +32,7 @@ int read_file(char const *path, char **buffer) {
         return ERROR;
     }
 
-     // could use fseek but stat is posix so let's use that
+     /* could use fseek but stat is posix so let's use that */
     struct stat st;
     if (0 > fstat(fd, &st)) {
 #ifdef DEBUG

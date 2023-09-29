@@ -2,17 +2,6 @@
 #ifndef IMPLANT_H
 #define IMPLANT_H
 
-/*
-    TODO:
-
-    - add message_queue for each key logged
-    - communication with remote server (& logging if debug!!)
-    - add support for TLS communications / some kind of enc.
-    - enumerate process to see which can be interesting to inject into
-    - use ptrace-less process injection to inject this in a legit program
-    - add listener to receive commands such as (sleep, enumeration, etc...)
-*/
-
 
 #include <sys/types.h>
 #include <stdint.h>

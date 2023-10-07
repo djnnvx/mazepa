@@ -13,7 +13,7 @@ LINK_FLAG    	= -lxkbcommon
 CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 
 ifeq ($(MAKECMDGOALS), debug)
-	CFLAGS 			+= -g3 -DDEBUG
+	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security
 else
 	CFLAGS 		 	+= -Wall -Wextra -O3 -Weverything -Wpedantic -Wl,-s
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s

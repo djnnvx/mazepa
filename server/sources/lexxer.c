@@ -8,7 +8,6 @@
 #include <strings.h>
 #include <unistd.h>
 
-
 const static struct option cli_options[] = {
     {"help", no_argument, 0, 'h'},
     {"listen-port", required_argument, 0, 'p'},
@@ -16,59 +15,55 @@ const static struct option cli_options[] = {
 };
 
 static void get_help(const char *bin_name) {
-    printf("%s: mazepa keylogger server\n", bin_name);
-    printf("USAGE:\n");
-    printf("\t--listen-port [-p]: specifies server listening port\n");
-    printf("\t--db-path     [-d]: specifies sqlite .db filepath\n");
+  printf("%s: mazepa keylogger server\n", bin_name);
+  printf("USAGE:\n");
+  printf("\t--listen-port [-p]: specifies server listening port\n");
+  printf("\t--db-path     [-d]: specifies sqlite .db filepath\n");
 
-    printf("\t--help        [-h]: triggers help mode\n");
-    printf("\n\nwritten with <3 by djnn -- https://djnn.sh");
+  printf("\t--help        [-h]: triggers help mode\n");
+  printf("\n\nwritten with <3 by djnn -- https://djnn.sh");
 }
 
-int parse_cli_arguments(
-        server_t *instance,
-        int ac,
-        char **av,
-        __attribute__((unused)) char **envp
-    ) {
+int parse_cli_arguments(server_t *instance, int ac, char **av,
+                        __attribute__((unused)) char **envp) {
 
-    int c = 0;
-    int opt_idx = 0;
-    char const *short_options = "d:p:h";
+  int c = 0;
+  int opt_idx = 0;
+  char const *short_options = "d:p:h";
 
-    while ((c = getopt_long(ac, av, short_options, cli_options, &opt_idx)) != -1) {
+  while ((c = getopt_long(ac, av, short_options, cli_options, &opt_idx)) !=
+         -1) {
 
-        switch (c) {
-            case 'h':
-                get_help(av[0]);
-                _exit(0);
+    switch (c) {
+    case 'h':
+      get_help(av[0]);
+      _exit(0);
 
-            case 'd':
+    case 'd':
 
-                instance->options.listen_port = (unsigned short)strtoul(optarg, NULL, 0);
+      instance->options.listen_port = (unsigned short)strtoul(optarg, NULL, 0);
 #ifdef DEBUG
-                DEBUG_LOG("setting listen port to %d", instance->options.listen_port);
+      DEBUG_LOG("setting listen port to %d", instance->options.listen_port);
 #endif
-                break;
+      break;
 
+    case 'p':
 
-            case 'p':
-
-                bzero((void *)instance->options.db_filepath, STRING_BUFFER_SIZE);
-                memcpy((void *)instance->options.db_filepath, optarg, strnlen(optarg, STRING_BUFFER_SIZE));
+      bzero((void *)instance->options.db_filepath, STRING_BUFFER_SIZE);
+      memcpy((void *)instance->options.db_filepath, optarg,
+             strnlen(optarg, STRING_BUFFER_SIZE));
 #ifdef DEBUG
-                DEBUG_LOG("setting .db filepath to: %s", instance->options.db_filepath);
+      DEBUG_LOG("setting .db filepath to: %s", instance->options.db_filepath);
 #endif
-                break;
+      break;
 
-            case '?':
-                return ERROR;
+    case '?':
+      return ERROR;
 
-            default: break;
-
-        }
-
+    default:
+      break;
     }
+  }
 
-    return SUCCESSFUL;
+  return SUCCESSFUL;
 }

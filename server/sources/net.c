@@ -65,6 +65,5 @@ int init_remote_connection(server_t *instance) {
     return -1;
   }
 
-
   return sockfd;
 }

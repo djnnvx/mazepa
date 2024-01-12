@@ -42,15 +42,14 @@ typedef struct server_state {
   TAILQ_HEAD(listhead, client_state) clients;
 
   struct user_options {
-        char const db_filepath[STRING_BUFFER_SIZE]; // sqlite .db filepath
-        unsigned short listen_port;
+    char const db_filepath[STRING_BUFFER_SIZE]; // sqlite .db filepath
+    unsigned short listen_port;
 
-        /*
-            TODO:
-            add encryption key config here, once protocol impl. is finished
-        */
+    /*
+        TODO:
+        add encryption key config here, once protocol impl. is finished
+    */
   } options;
-
 
   int sockfd;
 } server_t;

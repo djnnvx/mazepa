@@ -5,11 +5,7 @@
 */
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <netinet/in.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/socket.h>
 
 #include "server.h"
@@ -42,7 +38,7 @@ int init_remote_connection(server_t *instance) {
   /* items required to bind socket to remote address */
   int is_enabled = 1;
   struct sockaddr_in addr = {.sin_family = AF_INET,
-                             .sin_port = htons(SERVER_PORT),
+                             .sin_port = htons(instance->options.listen_port),
                              .sin_addr.s_addr = inet_addr("0.0.0.0")};
 
   /* setting socket options to make connection more convenient */
@@ -69,7 +65,6 @@ int init_remote_connection(server_t *instance) {
     return -1;
   }
 
-  // TODO: do listen() here ?
 
   return sockfd;
 }

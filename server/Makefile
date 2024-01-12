@@ -10,7 +10,7 @@ INCLUDES 	 	= -I./includes/
 LINK_FLAG    	= -lxkbcommon
 
 
-CFLAGS 			= -Wno-unused-command-line-argument -fPIC
+CFLAGS 			= -Wno-unused-command-line-argument -Wno-cast-qual -fPIC
 
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security
@@ -28,7 +28,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= net.c
+SRC 		 	= net.c lexxer.c
 
 ########################
 #### COMPILATION #######

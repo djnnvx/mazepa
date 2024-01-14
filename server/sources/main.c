@@ -14,4 +14,9 @@ int main(int ac, char **av, char **envp) {
   }
 
   srv.sockfd = init_remote_connection(&srv);
+#ifdef DEBUG
+  DEBUG_LOG("[+] socket initiated....preparing DB connection");
+#endif
+
+  srv.dbfd = init_csv_dbfd((char const *)srv.options.db_filepath);
 }

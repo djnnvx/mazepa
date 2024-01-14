@@ -13,7 +13,8 @@
 int init_remote_connection(server_t *instance) {
 
 #ifdef DEBUG
-  DEBUG_LOG("Initiating remote connection with (localhost:%d)", SERVER_PORT);
+  DEBUG_LOG("Initiating remote connection with (localhost:%d)",
+            instance->options.listen_port);
 #endif
 
   /*

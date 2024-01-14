@@ -18,7 +18,6 @@ static void get_help(const char *bin_name) {
   printf("%s: mazepa keylogger server\n\n", bin_name);
   printf("USAGE:\n");
   printf("\t--listen-port [-p]: specifies server listening port\n");
-  // TODO: use sqlite instead? cbf to be honest, but could be a good exercise
   printf("\t--db-path     [-d]: specifies .csv filepath\n");
 
   printf("\t--help        [-h]: triggers help mode\n");

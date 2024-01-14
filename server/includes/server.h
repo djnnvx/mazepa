@@ -1,6 +1,11 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#ifdef DEBUG
+    #include <string.h>
+    #include <errno.h>
+#endif
+
 #include <stddef.h>
 #include <sys/queue.h>
 #include <sys/types.h>

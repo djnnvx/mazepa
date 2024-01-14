@@ -3,9 +3,7 @@
 #include <unistd.h>
 #include "implant.h"
 
-int
-main(int ac, char** av, char** envp)
-{
+int main(int ac, char **av, char **envp) {
 
     /*
         TODO:
@@ -17,7 +15,7 @@ main(int ac, char** av, char** envp)
     */
 
     implant_t instance = {
-        .ip = { 0 }, .port = 80, /* ip can be a domain name */
+        .ip = {0}, .port = 80, /* ip can be a domain name */
     };
 
     if (ERROR == parse_user_input(ac, av, &instance))

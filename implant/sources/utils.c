@@ -17,13 +17,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-int
-read_file(char const* path, char** buffer)
-{
+int read_file(char const *path, char **buffer) {
 
     int fd = open(path, O_RDONLY);
-    if (0 > fd)
-    {
+    if (0 > fd) {
 #ifdef DEBUG
         DEBUG_LOG("Could not open %s: %s", path, strerror(errno));
 #endif
@@ -32,8 +29,7 @@ read_file(char const* path, char** buffer)
 
     /* could use fseek but stat is posix so let's use that */
     struct stat st;
-    if (0 > fstat(fd, &st))
-    {
+    if (0 > fstat(fd, &st)) {
 #ifdef DEBUG
         DEBUG_LOG("Could not call fstat on %s: %s", path, strerror(errno));
 #endif
@@ -43,8 +39,7 @@ read_file(char const* path, char** buffer)
     unsigned long filesize = (unsigned long)st.st_size;
 
     *buffer = malloc(sizeof(char) * (filesize + 1));
-    if (!buffer || !(*buffer))
-    {
+    if (!buffer || !(*buffer)) {
 #ifdef DEBUG
         DEBUG_LOG("Could not allocate memory for %s: %s", path, strerror(errno));
 #endif
@@ -52,8 +47,7 @@ read_file(char const* path, char** buffer)
     }
 
     ssize_t bytes = read(fd, *buffer, filesize);
-    if (bytes != st.st_size)
-    {
+    if (bytes != st.st_size) {
 #ifdef DEBUG
         DEBUG_LOG("[!] Should have read %ld bytes but read %ld (filepath: %s)",
                   st.st_size,
@@ -61,8 +55,7 @@ read_file(char const* path, char** buffer)
                   path);
 #endif
 
-        if (bytes < 0)
-        {
+        if (bytes < 0) {
 #ifdef DEBUG
             DEBUG_LOG("read: %s", strerror(errno));
 #endif
@@ -76,8 +69,7 @@ read_file(char const* path, char** buffer)
 }
 
 static size_t
-get_nb_cols(const char* str, int n, char separator)
-{
+get_nb_cols(const char *str, int n, char separator) {
     size_t i = (size_t)n;
     size_t res = 0;
 
@@ -89,8 +81,7 @@ get_nb_cols(const char* str, int n, char separator)
 }
 
 static size_t
-get_nb_rows(const char* str, char separator)
-{
+get_nb_rows(const char *str, char separator) {
     int i;
     size_t res = 0;
 
@@ -104,27 +95,24 @@ get_nb_rows(const char* str, char separator)
     return (res + 1);
 }
 
-char**
-tabgen(const char* str, char separator)
-{
+char **
+tabgen(const char *str, char separator) {
     size_t i = 0;
     size_t malloc_size = 0;
     size_t index_str = 0;
-    char** res = NULL;
+    char **res = NULL;
 
     if (str == NULL || *str == 0)
         return NULL;
 
-    res = malloc(sizeof(char*) * (get_nb_rows(str, separator) + 1));
-    for (; i < get_nb_rows(str, separator); i++)
-    {
+    res = malloc(sizeof(char *) * (get_nb_rows(str, separator) + 1));
+    for (; i < get_nb_rows(str, separator); i++) {
         malloc_size = get_nb_cols(&str[index_str], 0, separator);
 
         res[i] = malloc(sizeof(char) * (malloc_size + 4));
-        if (!res[i])
-        {
+        if (!res[i]) {
             res[i] = NULL;
-            free_tab((uint8_t**)res);
+            free_tab((uint8_t **)res);
             return NULL;
         }
 
@@ -138,17 +126,14 @@ tabgen(const char* str, char separator)
     return (res);
 }
 
-void
-free_tab(uint8_t** tab)
-{
+void free_tab(uint8_t **tab) {
     for (size_t ctr = 0; tab[ctr] != NULL; ctr++)
         free(tab[ctr]);
     free(tab);
 }
 
-char*
-remove_repeating_whitespaces(char* s)
-{
+char *
+remove_repeating_whitespaces(char *s) {
     size_t i = 0;
     size_t x = 0;
 
@@ -164,8 +149,7 @@ remove_repeating_whitespaces(char* s)
 }
 
 size_t
-get_array_size(uint8_t** array)
-{
+get_array_size(uint8_t **array) {
     size_t ctr = 0;
 
     if (!array)

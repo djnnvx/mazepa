@@ -11,8 +11,7 @@
 #include "implant.h"
 
 static void
-help_mode(char const* binary_path)
-{
+help_mode(char const *binary_path) {
 #ifdef DEBUG
     printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback "
            "Port\n\t-n\tDisable network connection (for debug)\n",
@@ -22,22 +21,18 @@ help_mode(char const* binary_path)
 #endif
 }
 
-int
-parse_user_input(int ac, char** av, implant_t* settings)
-{
+int parse_user_input(int ac, char **av, implant_t *settings) {
     int c = 0;
 
 #ifdef DEBUG
-    char const* options = "i:p:hn";
+    char const *options = "i:p:hn";
 #else
-    char const* options = "i:p:h";
+    char const *options = "i:p:h";
 #endif
 
-    do
-    {
+    do {
         c = getopt(ac, av, options);
-        switch (c)
-        {
+        switch (c) {
 
 #ifdef DEBUG
         case 'n':
@@ -45,7 +40,7 @@ parse_user_input(int ac, char** av, implant_t* settings)
             break;
 #endif
         case 'i':
-            strncpy((char*)&settings->ip, optarg, 255);
+            strncpy((char *)&settings->ip, optarg, 255);
             break;
 
         case 'p':

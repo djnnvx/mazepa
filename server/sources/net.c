@@ -10,9 +10,7 @@
 
 #include "server.h"
 
-int
-init_remote_connection(server_t* instance)
-{
+int init_remote_connection(server_t *instance) {
 
 #ifdef DEBUG
     DEBUG_LOG("Initiating remote connection with (localhost:%d)",
@@ -28,8 +26,7 @@ init_remote_connection(server_t* instance)
 
     */
     int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sockfd < 0)
-    {
+    if (sockfd < 0) {
 
 #ifdef DEBUG
         perror("socket");
@@ -41,16 +38,15 @@ init_remote_connection(server_t* instance)
 
     /* items required to bind socket to remote address */
     int is_enabled = 1;
-    struct sockaddr_in addr = { .sin_family = AF_INET,
-                                .sin_port = htons(instance->options.listen_port),
-                                .sin_addr.s_addr = inet_addr("0.0.0.0") };
+    struct sockaddr_in addr = {.sin_family = AF_INET,
+                               .sin_port = htons(instance->options.listen_port),
+                               .sin_addr.s_addr = inet_addr("0.0.0.0")};
 
     /* setting socket options to make connection more convenient */
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, /* allowing to reuse ADDR or PORT
                                                                        (useful for testing) */
                    &is_enabled,
-                   sizeof(int)) < 0)
-    {
+                   sizeof(int)) < 0) {
 
 #ifdef DEBUG
         DEBUG_LOG("setsockopt send_key_description: %s", strerror(errno));
@@ -60,8 +56,7 @@ init_remote_connection(server_t* instance)
         return -1;
     }
 
-    if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-    {
+    if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 
 #ifdef DEBUG
         DEBUG_LOG("connect: %s", strerror(errno));
@@ -71,8 +66,7 @@ init_remote_connection(server_t* instance)
         return -1;
     }
 
-    if (listen(sockfd, MAX_NB_CLIENT) < 0)
-    {
+    if (listen(sockfd, MAX_NB_CLIENT) < 0) {
 #ifdef DEBUG
         DEBUG_LOG("listen: %s", strerror(errno));
 #endif

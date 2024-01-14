@@ -1,7 +1,5 @@
-BasedOnStyle: Mozilla
+BasedOnStyle: LLVM
 AccessModifierOffset: '-4'
-AllowShortIfStatementsOnASingleLine: Never
-BreakBeforeBraces: Allman
 ColumnLimit: '0'
 FixNamespaceComments: 'false'
 IndentCaseLabels: 'false'

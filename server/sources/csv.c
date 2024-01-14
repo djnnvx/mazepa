@@ -14,9 +14,7 @@ underneath
 #include <unistd.h>
 #include "server.h"
 
-int
-init_csv_dbfd(char const* filepath)
-{
+int init_csv_dbfd(char const *filepath) {
 
     if (!filepath || (!(*filepath)))
         return -1;
@@ -25,8 +23,7 @@ init_csv_dbfd(char const* filepath)
     int access_status = access(filepath, R_OK | W_OK);
 
     /* file probably does not exist, let's create a file and return fd */
-    if (access_status == -1)
-    {
+    if (access_status == -1) {
         int fd = open(filepath, O_CREAT | O_RDWR);
 #ifdef DEBUG
         DEBUG_LOG("[+] created dbfd: %d\n", fd);
@@ -35,8 +32,7 @@ init_csv_dbfd(char const* filepath)
     }
 
     /* all good, lets just open & return */
-    if (access_status == 0)
-    {
+    if (access_status == 0) {
         int fd = open(filepath, O_RDWR);
 #ifdef DEBUG
         DEBUG_LOG("[+] opened existing dbfd: %d\n", fd);

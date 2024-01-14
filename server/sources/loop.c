@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/queue.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include "server.h"
 
@@ -28,25 +29,23 @@ void loop(server_t *instance) {
     fd_set ws;
     fd_set es;
 
+    struct timeval timeout = {
+        .tv_usec = 5000,
+        .tv_sec = 0};
+
+    instance->fdsize = get_fd_size();
     TAILQ_INIT(&instance->clients);
     while (should_gracefully_exit(0)) {
+        if (check_new_connections(instance) == -1)
+            break;
 
-        // TODO: check for new connections here
-
-        int fdsize = get_fd_size();
-        if (fdsize == -1)
+        if (instance->fdsize == -1)
             break;
 
         fdset_setup(&ws, &rs, &es, instance);
-
+        if (select(instance->fdsize, &rs, &ws, &es, &timeout)) {
 #ifdef DEBUG
-        struct timeval timeout = {.tv_usec = 5000, .tv_sec = 0};
-        int sstat = select(fdsize, &rs, &ws, &es, &timeout);
-        if (sstat == -1) {
             DEBUG_LOG("select: %s", strerror(errno));
-#else
-        int sstat = select(fdsize, &rs, &ws, &es, NULL);
-        if (sstat == -1) {
 #endif
             break;
         }
@@ -82,6 +81,55 @@ static void
 sig_handler(int code) {
     if (code == SIGINT)
         should_gracefully_exit(code);
+}
+
+int check_new_connections(server_t *instance) {
+    fd_set rs, es;
+    struct timeval timeout = {
+        .tv_usec = 5000,
+        .tv_sec = 0};
+
+    FD_ZERO(&rs);
+    FD_ZERO(&es);
+
+    FD_SET(instance->sockfd, &rs);
+    FD_SET(instance->sockfd, &es);
+
+    /* only 1 socket */
+    int status = select(2, &rs, NULL, &es, &timeout);
+    if (status == -1 || FD_ISSET(instance->sockfd, &es)) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] select error: %s\n", strerror("select"));
+#endif
+        return -1;
+    } else if (status == 0) {
+        return 0;
+    }
+
+    if (FD_ISSET(instance->sockfd, &es)) {
+        /* add new connection to clients list */
+
+        client_t *client = malloc(sizeof(client_t));
+        if (!client) {
+#ifdef DEBUG
+            DEBUG_LOG("[+] malloc error: %s\n", strerror("malloc"));
+#endif
+            return -1;
+        }
+
+        memset(client, 0, sizeof(client_t));
+        client->sockfd = accept(instance->sockfd, NULL, NULL);
+        if (setsockopt(
+                client->sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &(int){1},
+                sizeof(int)) < 0) {
+            return -1;
+        }
+
+        instance->fdsize = get_fd_size();
+        TAILQ_INSERT_TAIL(&instance->clients, client, clients);
+    }
+
+    return 0;
 }
 
 int get_fd_size(void) {

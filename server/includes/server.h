@@ -64,6 +64,8 @@ typedef struct server_state {
     TAILQ_HEAD(listhead, client_state)
     clients;
 
+    int fdsize;
+
     struct user_options {
         char const db_filepath[STRING_BUFFER_SIZE]; // .csv filepath
         unsigned short listen_port;
@@ -99,5 +101,6 @@ void loop(server_t *instance);
 int should_gracefully_exit(int code);
 int get_fd_size(void);
 void fdset_setup(fd_set *ws, fd_set *rs, fd_set *es, server_t *instance);
+int check_new_connections(server_t *instance);
 
 #endif /* SERVER_H */

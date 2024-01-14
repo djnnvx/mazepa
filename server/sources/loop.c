@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/queue.h>
 #include <sys/select.h>
 #include <unistd.h>
 #include "server.h"
@@ -23,19 +24,45 @@
         -> if anything fucks up at any point just trigger cleanup routine
 */
 void loop(server_t *instance) {
+    fd_set rs;
+    fd_set ws;
+    fd_set es;
 
+    TAILQ_INIT(&instance->clients);
     while (should_gracefully_exit(0)) {
+
+        // TODO: check for new connections here
+
         int fdsize = get_fd_size();
         if (fdsize == -1)
             break;
 
-        int sstat = select(fdsize, NULL, NULL, NULL, NULL);
-        if (sstat == -1) {
+        fdset_setup(&ws, &rs, &es, instance);
+
 #ifdef DEBUG
+        struct timeval timeout = {.tv_usec = 5000, .tv_sec = 0};
+        int sstat = select(fdsize, &rs, &ws, &es, &timeout);
+        if (sstat == -1) {
             DEBUG_LOG("select: %s", strerror(errno));
+#else
+        int sstat = select(fdsize, &rs, &ws, &es, NULL);
+        if (sstat == -1) {
 #endif
             break;
         }
+    }
+}
+
+void fdset_setup(fd_set *ws, fd_set *rs, fd_set *es, server_t *instance) {
+    FD_ZERO(es);
+    FD_ZERO(ws);
+    FD_ZERO(rs);
+
+    client_t *it = NULL;
+    TAILQ_FOREACH(it, &instance->clients, clients) {
+        FD_SET(it->sockfd, es);
+        FD_SET(it->sockfd, ws);
+        FD_SET(it->sockfd, rs);
     }
 }
 
@@ -81,6 +108,7 @@ int get_fd_size(void) {
     }
 
     buf[num_read] = '\0';
+    close(statfd);
 
     const char *fdsize_ptr = strstr(buf, fdsize_ptr);
     if (!fdsize_ptr)

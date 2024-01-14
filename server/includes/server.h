@@ -98,5 +98,6 @@ int init_csv_dbfd(char const *filepath);
 void loop(server_t *instance);
 int should_gracefully_exit(int code);
 int get_fd_size(void);
+void fdset_setup(fd_set *ws, fd_set *rs, fd_set *es, server_t *instance);
 
 #endif /* SERVER_H */

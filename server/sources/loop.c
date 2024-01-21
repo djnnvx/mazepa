@@ -33,6 +33,10 @@ void loop(server_t *instance) {
         .tv_usec = 5000,
         .tv_sec = 0};
 
+    int dbfd = init_csv_dbfd(instance->options.db_filepath);
+    if (dbfd < 0)
+        return;
+
     instance->fdsize = get_fd_size();
     TAILQ_INIT(&instance->clients);
     while (should_gracefully_exit(0)) {
@@ -43,12 +47,29 @@ void loop(server_t *instance) {
             break;
 
         fdset_setup(&ws, &rs, &es, instance);
-        if (select(instance->fdsize, &rs, &ws, &es, &timeout)) {
+        if (select(instance->fdsize, &rs, &ws, &es, &timeout) < 0) {
 #ifdef DEBUG
             DEBUG_LOG("select: %s", strerror(errno));
 #endif
             break;
         }
+
+        client_t *it = NULL;
+        TAILQ_FOREACH(it, &instance->clients, clients) {
+
+            /*
+               an error has happened, we should clean up the connection & dump
+               last retrieved info to database
+            */
+            if (FD_ISSET(it->sockfd, &es)) {
+                // csv_mark_for_next_dump(dbfd, it);
+                close(it->sockfd);
+                TAILQ_REMOVE(&instance->clients, it, clients);
+            }
+
+
+        }
+
     }
 }
 

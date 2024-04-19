@@ -9,6 +9,7 @@
 #include <netinet/ip_icmp.h>
 #include <sys/socket.h>
 
+#include <string.h>
 #include "server.h"
 
 int init_remote_connection(server_t *instance) {
@@ -84,10 +85,53 @@ int init_remote_connection(server_t *instance) {
     return sockfd;
 }
 
-int net_poll_icmp_recv(server_t *instance, icmp_msg_t *msg) {
+/* NOTE(djnn): this function's failure triggers exit routine,
+ * so ERROR is only returned on critical error */
+int net_icmp_recv(const server_t *instance, icmp_msg_t *msg) {
 
+    socklen_t src_addr_size = 0;
     struct sockaddr_in src_addr = {0};
+    struct iphdr *ip_addr = NULL;
+    struct icmphdr *icmp_header = NULL;
 
+    /* check if we can hold the full message */
+    _Static_assert(MTU + sizeof(struct iphdr) + sizeof(struct icmphdr) < ICMP_DATA_LENGTH, "ICMP_DATA_LENGTH is not big enough");
+
+    const int encapsulated_mtu = MTU + sizeof(struct iphdr) + sizeof(struct icmphdr);
+    char full_packet[ICMP_DATA_LENGTH] = {0}; /* all values are static ; this is fine */
+
+    /* blocking recvfrom() to retrieve ICMP packet :) */
+    ssize_t pktsz = recvfrom(
+        instance->sockfd,
+        full_packet,
+        encapsulated_mtu,
+        0,
+        (struct sockaddr *)&(src_addr),
+        &src_addr_size
+        );
+    if (pktsz < 0)
+        return ERROR;
+
+    /* parse headers */
+    ip_addr = (struct iphdr *)full_packet;
+    icmp_header = (struct icmphdr *)(full_packet + sizeof(struct iphdr));
+    msg->payload_size = (size_t)pktsz - sizeof(struct iphdr) - sizeof(struct icmphdr);
+
+    if (memccpy(
+        msg->payload,
+        (full_packet + sizeof(struct iphdr) + sizeof(struct icmphdr)),
+        0,
+        msg->payload_size
+        ) == NULL) {
+        /* non-critical error. maybe perror() this ? */
+        bzero(msg->addr, IP_LENGTH);
+
+        return SUCCESSFUL;
+    }
+
+    /* set message type & source ip-addr */
+    msg->type = icmp_header->type;
+    inet_ntop(AF_INET, &(ip_addr->saddr), msg->addr, INET_ADDRSTRLEN);
 
     return SUCCESSFUL;
 }

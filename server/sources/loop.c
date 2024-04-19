@@ -15,25 +15,34 @@
 #include "server.h"
 
 
+static void
+sig_handler(int code) {
+    if (code == SIGINT)
+        should_gracefully_exit(code);
+}
+
+
 void loop(server_t *instance) {
 
     int dbfd = init_csv_dbfd(instance->options.db_filepath);
     if (dbfd < 0 && instance->options.db_filepath[0] != 0)
         return;
 
+    signal(SIGINT, sig_handler);
     TAILQ_INIT(&instance->clients);
     while (should_gracefully_exit(0)) {
 
         icmp_msg_t msg = {0};
 
         /* poll for new packet */
-        if (net_poll_icmp_recv(instance, &msg) < 0) {
+        if (net_icmp_recv(instance, &msg) < 0) {
             goto CLEANUP_ROUTINE;
         }
 
-        /* have we received a new message */
+        /* have we received a new message ?
+         * (we should always have one but lets check if something fucked up) */
         if (msg.addr[0] == 0) {
-            usleep(7500);
+            usleep(2500);
             continue;
         }
 
@@ -64,8 +73,14 @@ CLEANUP_ROUTINE:
     close(dbfd);
 }
 
-static void
-sig_handler(int code) {
-    if (code == SIGINT)
-        should_gracefully_exit(code);
+int should_gracefully_exit(int code) {
+    static int should_exit = 0;
+
+    if (code != 0 || should_exit) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] caught code: %d\n", code)
+#endif
+        should_exit = 1;
+    }
+    return should_exit;
 }

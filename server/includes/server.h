@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #define QUEUE_BUFFER_SIZE 1024
-#define STRING_BUFFER_SIZE 256
+#define STRING_BUFFER_SIZE 4096
 #define MAX_NB_CLIENT 128
 
 /* meant for key translations from xkbcommon and the event we receive. :^) */
@@ -64,15 +64,15 @@ struct client_state {
     clients;
 };
 
-#define IP_LENGTH (40)
-#define ICMP_DATA_LENGTH (128) /* should not exceed 9000 AFAIK (also should not exceed STRING_BUFFER_SIZE) */
+#define IP_LENGTH (16)
+#define ICMP_DATA_LENGTH (2048) /* should not exceed 9000 AFAIK (also should not exceed STRING_BUFFER_SIZE) */
 
 typedef struct icmp_packet {
     char addr[IP_LENGTH];
     int type;
 
     char payload[ICMP_DATA_LENGTH];
-    ssize_t payload_size;
+    size_t payload_size;
 } icmp_msg_t;
 
 
@@ -108,7 +108,7 @@ typedef struct server_state {
 
 // net.c
 int init_remote_connection(server_t *instance);
-int net_poll_icmp_recv(server_t *instance, icmp_msg_t *msg);
+int net_icmp_recv(const server_t *instance, icmp_msg_t *msg);
 
 // lexxer.c
 int parse_cli_arguments(server_t *instance, const int ac, char **av, char **envp);

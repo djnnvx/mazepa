@@ -11,6 +11,7 @@ LINK_FLAG    	= -lxkbcommon
 
 
 CFLAGS 			= -Wno-unused-command-line-argument -Wno-cast-qual -fPIC
+CFLAGS 			+= -Wno-tautological-value-range-compare
 
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security

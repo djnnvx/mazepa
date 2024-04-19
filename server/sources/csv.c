@@ -5,9 +5,6 @@ TODO:
     - add optional support for sqlite (maybe at compile-time) with an option
     - build little abstraction that will call the under-layered functions
 underneath
-
-    simple layout will be:
-    uuid, name, ip-addr, linux-version, locale, dump
 */
 
 #include <fcntl.h>

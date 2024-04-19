@@ -24,7 +24,7 @@ get_help(const char *bin_name) {
     printf("\n\nwritten with <3 by djnn -- https://djnn.sh\n");
 }
 
-int parse_cli_arguments(server_t *instance, int ac, char **av, __attribute__((unused)) char **envp) {
+int parse_cli_arguments(server_t *instance, const int ac, char **av, __attribute__((unused)) char **envp) {
 
     int c = 0;
     int opt_idx = 0;

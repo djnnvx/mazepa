@@ -29,7 +29,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= net.c lexxer.c csv.c loop.c
+SRC 		 	= net.c lexxer.c csv.c loop.c keys.c
 
 ########################
 #### COMPILATION #######

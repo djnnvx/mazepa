@@ -30,7 +30,7 @@ void loop(server_t *instance) {
 
     signal(SIGINT, sig_handler);
     TAILQ_INIT(&instance->clients);
-    while (should_gracefully_exit(0)) {
+    while (!should_gracefully_exit(0)) {
 
         icmp_msg_t msg = {0};
 

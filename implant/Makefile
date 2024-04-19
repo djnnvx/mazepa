@@ -7,7 +7,7 @@ CC			 	= clang
 RM			 	= rm -rf
 
 INCLUDES 	 	= -I./includes/
-LINK_FLAG    	= -lxkbcommon
+LINK_FLAG    	=
 
 
 CFLAGS 			= -Wno-unused-command-line-argument -fPIC
@@ -15,10 +15,10 @@ CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security
 else
-	CFLAGS 		 	+= -Wall -Wextra -O3 -Weverything -Wpedantic -Wl,-s
+	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s
 	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
-	CFLAGS 			+= -Wno-unsafe-buffer-usage
+	CFLAGS 			+= -Wno-unsafe-buffer-usage -static
 endif
 
 

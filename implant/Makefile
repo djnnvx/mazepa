@@ -18,7 +18,7 @@ else
 	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s
 	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
-	CFLAGS 			+= -Wno-unsafe-buffer-usage -static
+	CFLAGS 			+= -static -Wno-visibility
 endif
 
 

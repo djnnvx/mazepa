@@ -13,7 +13,7 @@ LINK_FLAG    	=
 CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 
 ifeq ($(MAKECMDGOALS), debug)
-	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security
+	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security -Wno-visibility
 else
 	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s

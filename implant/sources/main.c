@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "implant.h"
 
-int main(int ac, char **av, char **envp) {
+int main(int ac, char **av, __attribute__((unused)) char **envp) {
 
     implant_t instance = {
         .ip = {0}, .port = 80, /* ip can be a domain name */

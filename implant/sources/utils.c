@@ -88,7 +88,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
         DEBUG_LOG("[%s] Should have read %ld bytes but read %ld (filepath: %s)\n",
                   CLIENT_ID,
                   st.st_size,
-                  bytes,
+                  bytes_read,
                   path);
 #endif
     }

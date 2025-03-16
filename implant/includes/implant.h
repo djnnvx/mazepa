@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define _GNU_SOURCE
+
 #ifdef DEBUG
 #include <errno.h>
 #endif

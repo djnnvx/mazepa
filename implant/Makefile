@@ -3,6 +3,10 @@ ifeq ($(MAKECMDGOALS), debug)
 	CLIENT_ID = DEBUG
 else
 	CLIENT_ID = $(shell echo $$RANDOM | md5sum | head -c 10)
+
+	AES_ALGO  := aes-128-cbc
+	AES_KEY   := $(shell echo $$RANDOM | md5sum | head -c 24 | xxd -p -u)
+	AES_IV    := $(shell echo $$RANDOM | md5sum | head -c 24 | xxd -p -u)
 endif
 
 NAME		 	= mazepa_$(CLIENT_ID)
@@ -15,11 +19,12 @@ LINK_FLAG    	=
 CFLAGS 			= -Wno-unused-command-line-argument -fPIC
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS 			+= -g3 -DDEBUG -Wno-format-security -Wno-visibility -DCLIENTID=DEBUG -Wno-unsafe-buffer-usage
+	CFLAGS 			+= -Wno-unused-macros
 else
-	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s
+	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s -static -Wno-visibility
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s -Wno-unsafe-buffer-usage
 	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
-	CFLAGS 			+= -static -Wno-visibility -DCLIENTID=$(CLIENT_ID)
+	CFLAGS 			+= -DCLIENTID=$(CLIENT_ID) -DAES_KEY=$(AES_KEY) -DAES_IV=$(AES_IV)
 endif
 
 
@@ -31,7 +36,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= opt.c utils.c daemon.c kbd.c
+SRC 		 	= opt.c utils.c daemon.c kbd.c aes.c
 
 
 COMBINED		= $(SRC) $(MAIN)
@@ -75,6 +80,10 @@ clean:  ## removes object files
 fclean: clean  ## removes all compilation artifacts
 	@$(RM) $(NAME) mazepa_*
 	@echo "[*** CLEAN ***]"
+
+.PHONY: gen-compile-commands
+gen-compile-commands: clean ## generate compile_commands.json
+	@bear -- make debug
 
 .PHONY: re  ## cleans everything and rebuild PROD binary
 re: fclean all

@@ -1,20 +1,19 @@
-/*
-   keyboard handling & locale support
-
-   input devices usually live in /dev/input/
-
-   you can identify the in the by-path subdirectory, which maps each
-   device name to a symlink
-
-   here, we will return set an array of file-descriptor for each available
-   keyboard on the machine, it should be appended with a -1 that should serve
-   as a NULL value
-*/
+/**
+ *  keyboard handling & locale support
+ *
+ *  input devices usually live in /dev/input/
+ *
+ *  you can identify the in the by-path subdirectory, which maps each
+ *  device name to a symlink
+ *
+ *  here, we will return set an array of file-descriptor for each available
+ *  keyboard on the machine, it should be appended with a -1 that should serve
+ *  as a NULL value
+ */
 
 #include "implant.h"
 
 #include <dirent.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>

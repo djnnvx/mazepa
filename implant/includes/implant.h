@@ -7,6 +7,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef DEBUG
+#include <errno.h>
+#endif
+
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
 

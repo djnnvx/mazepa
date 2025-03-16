@@ -1,5 +1,5 @@
 /*
-   program's imput handling is handled here.
+   program's input handling is handled here.
 */
 
 #include <getopt.h>

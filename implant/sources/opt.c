@@ -10,51 +10,42 @@
 
 #include "implant.h"
 
-static void
-help_mode(char const *binary_path) {
+static void help_mode(void) {
 #ifdef DEBUG
-    printf("%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback "
+    printf("mazepa_%s USAGE:\n\t-i\tCallback IP Address\n\t-p\tCallback "
            "Port\n\t-n\tDisable network connection (for debug)\n",
-           binary_path);
-#else
-    (void)binary_path;
+           CLIENT_ID);
 #endif
 }
 
-int parse_user_input(int ac, char **av, implant_t *settings) {
+int run_lexer(int ac, char **av, implant_t *settings) {
     int c = 0;
 
-#ifdef DEBUG
     char const *options = "i:p:hn";
-#else
-    char const *options = "i:p:h";
-#endif
 
     do {
         c = getopt(ac, av, options);
         switch (c) {
 
-#ifdef DEBUG
         case 'n':
             settings->disable_net = 1;
             break;
-#endif
+
         case 'i':
             strncpy((char *)&settings->ip, optarg, 255);
             break;
 
         case 'p':
-            settings->port = (unsigned short)strtoul(optarg, NULL, 0);
+            settings->port = (uint16_t)strtoul(optarg, NULL, 0);
             break;
 
-        case 'h':
-            help_mode(av[0]);
-            exit(0);
-            /* will exit on help_mode() anyway */
-
         case '?':
-            help_mode(av[0]);
+            help_mode();
             return ERROR;
+
+        case 'h':
+            help_mode();
+            exit(0);
 
         default:
             break;

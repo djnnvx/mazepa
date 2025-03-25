@@ -21,7 +21,7 @@ static void help_mode(void) {
 int run_lexer(int ac, char **av, implant_t *settings) {
     int c = 0;
 
-    char const *options = "i:p:hn";
+    char const *options = "i:hn";
 
     do {
         c = getopt(ac, av, options);
@@ -33,10 +33,6 @@ int run_lexer(int ac, char **av, implant_t *settings) {
 
         case 'i':
             strncpy((char *)&settings->ip, optarg, 255);
-            break;
-
-        case 'p':
-            settings->port = (uint16_t)strtoul(optarg, NULL, 0);
             break;
 
         case '?':

@@ -26,9 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 
 int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
     struct stat st = {0};
@@ -86,10 +88,10 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
     if (bytes_read != filesize) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] Should have read %ld bytes but read %ld (filepath: %s)\n",
-                  CLIENT_ID,
-                  st.st_size,
-                  bytes_read,
-                  path);
+                CLIENT_ID,
+                st.st_size,
+                bytes_read,
+                path);
 #endif
     }
 
@@ -198,3 +200,32 @@ int8_t *remove_repeating_whitespaces(int8_t *s) {
     s[x] = '\0';
     return s;
 }
+
+int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFER_SIZE]) {
+    int8_t ctr = -1;
+
+    bzero(output, STRING_BUFFER_SIZE);
+    if (!input)
+        return ERROR;
+
+    while (input[++ctr] != 0 && ctr < STRING_BUFFER_SIZE / 4) {
+        sprintf(output + ctr * 2, "%02x", (int8_t)input[ctr]);
+    }
+    output[STRING_BUFFER_SIZE] = 0;
+    return SUCCESSFUL;
+}
+
+int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SIZE]) {
+    int8_t ctr = -1;
+
+    bzero(output, STRING_BUFFER_SIZE);
+    if (!input)
+        return ERROR;
+
+    while (input[++ctr] != 0) {
+        output[ctr / 2] = (char)strtol(input + ctr, NULL, 16);
+    }
+    return SUCCESSFUL;
+}
+
+

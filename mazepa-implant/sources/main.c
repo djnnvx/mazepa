@@ -15,14 +15,14 @@ int main(
     __attribute__((unused)) char **envp) {
 
     implant_t instance = {
-        .ip = {"10.0.2.2"}, .port = 80, /* ip can be a domain name */
+        .ip = "10.0.2.2", /* ip can be a domain name */
     };
 
 #ifdef DEBUG
     if (ERROR == run_lexer(ac, av, &instance))
         return 1;
 
-    DEBUG_LOG("[*] settings:\n\tIP:%s\n\tPort:%d", instance.ip, instance.port);
+    DEBUG_LOG("[*] settings:\n\tIP:%s\n", instance.ip);
 #else
     /* TODO(djnn): instance_load_from_memory(&instance); */
 

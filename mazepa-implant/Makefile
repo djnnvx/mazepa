@@ -2,11 +2,11 @@
 ifeq ($(MAKECMDGOALS), debug)
 	CLIENT_ID = DEBUG
 else
-	CLIENT_ID = $(shell echo $$RANDOM | md5sum | head -c 10)
+	CLIENT_ID  = $(shell echo $$RANDOM | md5sum | head -c 10)
 
-	AES_ALGO  := aes-128-cbc
-	AES_KEY   := $(shell echo $$RANDOM | md5sum | head -c 24 | xxd -p -u)
-	AES_IV    := $(shell echo $$RANDOM | md5sum | head -c 24 | xxd -p -u)
+	KEY   := $(shell echo $$RANDOM | md5sum | head -c 32)
+	IV    := $(shell echo $$RANDOM | md5sum | head -c 8)
+	BLOCK := $(shell echo $$RANDOM | md5sum | head -c 64)
 endif
 
 NAME		 	= mazepa_$(CLIENT_ID)
@@ -24,7 +24,7 @@ else
 	CFLAGS 		 	+= -Wall -Wextra -Os -Weverything -Wpedantic -Wl,-s -static -Wno-visibility
 	CFLAGS 			+= -flto -m64 -fvisibility=hidden -fvisibility-inlines-hidden -s -Wno-unsafe-buffer-usage
 	CFLAGS 			+= -Wno-padded -Wno-gnu-zero-variadic-macro-arguments -Wno-declaration-after-statement
-	CFLAGS 			+= -DCLIENTID=$(CLIENT_ID) -DAES_KEY=$(AES_KEY) -DAES_IV=$(AES_IV)
+	CFLAGS 			+= -DCLIENTID=$(CLIENT_ID) # -DSTATIC_KEY=$(KEY) -DBLOCK=$(BLOCK) -DIV=$(IV)
 endif
 
 
@@ -36,7 +36,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= opt.c utils.c daemon.c kbd.c aes.c
+SRC 		 	= opt.c utils.c daemon.c kbd.c
 
 
 COMBINED		= $(SRC) $(MAIN)

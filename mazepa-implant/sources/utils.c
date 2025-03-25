@@ -31,7 +31,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
     struct stat st = {0};
     int fd = 0;
@@ -88,10 +87,10 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
     if (bytes_read != filesize) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] Should have read %ld bytes but read %ld (filepath: %s)\n",
-                CLIENT_ID,
-                st.st_size,
-                bytes_read,
-                path);
+                  CLIENT_ID,
+                  st.st_size,
+                  bytes_read,
+                  path);
 #endif
     }
 
@@ -227,5 +226,3 @@ int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SI
     }
     return SUCCESSFUL;
 }
-
-

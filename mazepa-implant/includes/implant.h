@@ -16,16 +16,14 @@
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
 
-
 /* will be overriden at compile-time if prod-mode enabled */
 #define BLOCK_SIZE 64
 #define KEY_SIZE 32
 #define IV_SIZE 8
 
-#define BLOCK   ("")
-#define KEY     ("")
-#define IV      ("")
-
+#define BLOCK ("")
+#define KEY ("")
+#define IV ("")
 
 /*
     represents whatever data is currently logged for a single keyboard
@@ -91,7 +89,6 @@ void daemon_setup(void);
 
 // kbd.c
 uint8_t fetch_available_keyboards(implant_t *instance);
-
 
 // utils.c
 int8_t file_get_contents(int8_t const *, int8_t **);

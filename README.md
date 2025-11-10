@@ -1,6 +1,6 @@
 ~ simple linux keylogger
 
-1. disclaimer
+# 1. disclaimer
 
 in practice, this software _will_ be detected. you wont get any use from deploying
 this. this is just meant as a demonstration on how malware for linux can be written,
@@ -13,12 +13,12 @@ Linux's internals, like I have and run it in a Virtual Machine or a Linux enviro
 I do not endorse the use of security tools for malicious use, nor do i wish to be
 responsible for your stupidity. thank u <3
 
-2. overall design & explanation
+# 2. overall design & explanation
 
 > I plan to release a blog-post about this pretty soon [here](https://djnn.sh) !
 
 
-2.a Logging keys
+## 2.a Logging keys
 
 There is many steps to do a project of the sort.
 
@@ -32,7 +32,7 @@ You should be able to find this event using the `readlink()` function.
 You can also take into account that there might be multiple keyboards, because
 of an USB keyboard plugged in, for instance.
 
-2.b persistence
+## 2.b persistence
 
 You can create a `systemd` service like so, in order to have it running at
 each reboot, if you'd like.
@@ -60,7 +60,7 @@ However, this will be left as an exercise to you. :)~
 
 > Here is an [excellent resource](https://pberba.github.io/security/2022/02/06/linux-threat-hunting-for-persistence-initialization-scripts-and-shell-configuration/) on persistence for linux
 
-3. debug mode
+# 3. debug mode
 
 A `debug` mode is supported out of the box, to allow for a simpler development.
 To compile a debug binary, run `make fclean && make debug` in the `./implant`

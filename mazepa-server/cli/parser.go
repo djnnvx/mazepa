@@ -20,6 +20,6 @@ func GetParser(opts *MazepaOptions) *cobra.Command {
 	}
 
 	defaults := GetDefaultOptions()
-	rootCmd.Flags().StringVarP(&opts.IP, "ip", "i", defaults.IP, "Address to listen on (only IPv4 supported for now)")
+	rootCmd.Flags().StringVarP(&opts.IP, "ip", "i", defaults.IP, "Address to listen on (IPv4 or IPv6)")
 	return rootCmd
 }

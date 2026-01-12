@@ -36,7 +36,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= opt.c utils.c daemon.c kbd.c
+SRC 		 	= opt.c utils.c daemon.c kbd.c ringbuf.c icmp.c evloop.c
 
 
 COMBINED		= $(SRC) $(MAIN)

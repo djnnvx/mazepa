@@ -60,6 +60,21 @@ However, this will be left as an exercise to you. :)~
 
 > Here is an [excellent resource](https://pberba.github.io/security/2022/02/06/linux-threat-hunting-for-persistence-initialization-scripts-and-shell-configuration/) on persistence for linux
 
+## 2.c managing language
+
+Current flow to manage languages:
+  1. Open console device once
+  2. Query all 256 keycodes for both normal and shifted tables
+  3. Close console device (no longer needed)
+  4. Event loop uses direct array lookups
+
+
+This make a LOT of ioctl syscalls at the startup of the program, which might not be ideal if you care about stealth.
+Afterwards, we save all key-presses into a ring buffer and push it through an ICMP packet to our server.
+
+If the user changes its keyboard layout, it will not be taken into account. It may be possible to add a
+scheduling system to re-fetch the keyboard language every n minutes or so but I couldnt be arsed to implement this.
+
 # 3. debug mode
 
 A `debug` mode is supported out of the box, to allow for a simpler development.

@@ -86,12 +86,12 @@ typedef struct implant_s {
 #include <syslog.h>
 
 #ifndef DEBUG_LOG
-#define DEBUG_LOG(s, ...)                              \
-    do {                                               \
-        char data[512] = {0};                          \
-        if (0 > snprintf(data, 255, s, ##__VA_ARGS__)) \
-            _exit(1);                                  \
-        syslog(LOG_NOTICE, data);                      \
+#define DEBUG_LOG(s, ...)                                       \
+    do {                                                        \
+        char data[512] = {0};                                   \
+        if (0 > snprintf(data, sizeof(data) - 1, s, ##__VA_ARGS__)) \
+            _exit(1);                                           \
+        syslog(LOG_NOTICE, data);                               \
     } while (0)
 #endif
 

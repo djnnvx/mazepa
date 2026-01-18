@@ -22,15 +22,25 @@ open_console(void) {
 
     for (int i = 0; consoles[i] != NULL; i++) {
         int fd = open(consoles[i], O_RDONLY | O_NOCTTY);
-        if (fd >= 0)
+        if (fd >= 0) {
+#ifdef DEBUG
+            DEBUG_LOG("[+] Console opened: %s (fd=%d)\n", consoles[i], fd);
+#endif
             return fd;
+        }
     }
+#ifdef DEBUG
+    DEBUG_LOG("[!] Failed to open any console device\n");
+#endif
     return -1;
 }
 
 static void
 cache_keymap(int console_fd, keymap_cache_t *cache) {
     struct kbentry entry = {0};
+#ifdef DEBUG
+    int mapped_keys = 0;
+#endif
 
     memset(cache, 0, sizeof(*cache));
 
@@ -51,8 +61,12 @@ cache_keymap(int console_fd, keymap_cache_t *cache) {
         entry.kb_index = (unsigned char)code;
         if (ioctl(console_fd, KDGKBENT, &entry) == 0) {
             unsigned char type = KTYP(entry.kb_value);
-            if (type == KT_LETTER || type == KT_LATIN)
+            if (type == KT_LETTER || type == KT_LATIN) {
                 cache->normal[code] = (char)KVAL(entry.kb_value);
+#ifdef DEBUG
+                mapped_keys++;
+#endif
+            }
         }
 
         entry.kb_table = K_SHIFTTAB;
@@ -63,6 +77,17 @@ cache_keymap(int console_fd, keymap_cache_t *cache) {
                 cache->shifted[code] = (char)KVAL(entry.kb_value);
         }
     }
+
+#ifdef DEBUG
+    DEBUG_LOG("[*] Keymap cached: %d keys mapped\n", mapped_keys);
+    DEBUG_LOG("[*] Sample mappings: Q=%c W=%c E=%c R=%c T=%c Y=%c\n",
+              cache->normal[KEY_Q] ? cache->normal[KEY_Q] : '?',
+              cache->normal[KEY_W] ? cache->normal[KEY_W] : '?',
+              cache->normal[KEY_E] ? cache->normal[KEY_E] : '?',
+              cache->normal[KEY_R] ? cache->normal[KEY_R] : '?',
+              cache->normal[KEY_T] ? cache->normal[KEY_T] : '?',
+              cache->normal[KEY_Y] ? cache->normal[KEY_Y] : '?');
+#endif
 }
 
 static char

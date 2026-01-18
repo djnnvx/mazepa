@@ -3,6 +3,8 @@
 #include <string.h>
 
 void ringbuf_init(ringbuf_t *rb) {
+    if (!rb)
+        return;
     memset(rb->data, 0, RINGBUF_SIZE);
     rb->head = 0;
     rb->tail = 0;
@@ -11,7 +13,7 @@ void ringbuf_init(ringbuf_t *rb) {
 
 uint8_t
 ringbuf_push(ringbuf_t *rb, uint8_t byte) {
-    if (rb->count >= RINGBUF_SIZE)
+    if (!rb || rb->count >= RINGBUF_SIZE)
         return ERROR;
 
     rb->data[rb->head] = byte;
@@ -24,6 +26,9 @@ size_t
 ringbuf_read(ringbuf_t *rb, uint8_t *dst, size_t len) {
     size_t bytes_read = 0;
 
+    if (!rb || !dst)
+        return 0;
+
     while (bytes_read < len && rb->count > 0) {
         dst[bytes_read] = rb->data[rb->tail];
         rb->tail = (rb->tail + 1) % RINGBUF_SIZE;
@@ -34,5 +39,7 @@ ringbuf_read(ringbuf_t *rb, uint8_t *dst, size_t len) {
 }
 
 int ringbuf_should_flush(ringbuf_t *rb) {
+    if (!rb)
+        return 0;
     return rb->count >= RINGBUF_FLUSH_THRESHOLD;
 }

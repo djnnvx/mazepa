@@ -101,6 +101,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] read: %s", CLIENT_ID, strerror(errno));
 #endif
+        close(fd);
         if (NULL != buffer) {
             free(*buffer);
         }
@@ -152,6 +153,8 @@ array_from_string(const int8_t *str, int8_t separator) {
         return NULL;
 
     res = malloc(sizeof(int8_t *) * (get_nb_rows(str, separator) + 1));
+    if (!res)
+        return NULL;
     for (; i < get_nb_rows(str, separator); i++) {
         malloc_size = get_nb_cols(&str[index_str], 0, separator);
 
@@ -206,7 +209,7 @@ int8_t *remove_repeating_whitespaces(int8_t *s) {
 }
 
 int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFER_SIZE]) {
-    int8_t ctr = -1;
+    int ctr = -1;
 
     bzero(output, STRING_BUFFER_SIZE);
     if (!input)
@@ -220,7 +223,7 @@ int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFE
 }
 
 int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SIZE]) {
-    int8_t ctr = -1;
+    int ctr = -1;
 
     bzero(output, STRING_BUFFER_SIZE);
     if (!input)

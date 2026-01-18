@@ -208,9 +208,9 @@ int8_t ascii_to_hex(char input[STRING_BUFFER_SIZE / 2], char output[STRING_BUFFE
         return ERROR;
 
     while (input[++ctr] != 0 && ctr < STRING_BUFFER_SIZE / 4) {
-        sprintf(output + ctr * 2, "%02x", (int8_t)input[ctr]);
+        snprintf(output + ctr * 2, STRING_BUFFER_SIZE - (ctr * 2), "%02x", (int8_t)input[ctr]);
     }
-    output[STRING_BUFFER_SIZE] = 0;
+    output[STRING_BUFFER_SIZE - 1] = 0;
     return SUCCESSFUL;
 }
 

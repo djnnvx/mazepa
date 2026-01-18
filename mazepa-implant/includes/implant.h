@@ -17,8 +17,14 @@
 #define STRING_BUFFER_SIZE 256
 #define MAX_KEYBOARDS 16
 #define ICMP_DATA_SIZE 56
+
+#ifdef DEBUG
+#define RINGBUF_SIZE 64
+#define RINGBUF_FLUSH_THRESHOLD 32
+#else
 #define RINGBUF_SIZE 512
 #define RINGBUF_FLUSH_THRESHOLD (RINGBUF_SIZE - 64)
+#endif
 
 /* will be overriden at compile-time if prod-mode enabled */
 #define BLOCK_SIZE 64

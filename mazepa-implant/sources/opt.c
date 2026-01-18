@@ -32,7 +32,8 @@ int run_lexer(int ac, char **av, implant_t *settings) {
             break;
 
         case 'i':
-            strncpy((char *)&settings->ip, optarg, 255);
+            strncpy((char *)settings->ip, optarg, STRING_BUFFER_SIZE - 1);
+            settings->ip[STRING_BUFFER_SIZE - 1] = '\0';
             break;
 
         case '?':

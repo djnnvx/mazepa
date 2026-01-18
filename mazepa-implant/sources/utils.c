@@ -39,7 +39,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
 
     if (NULL == path) {
 #ifdef DEBUG
-        DEBUG_LOG("[%s] %s is NULL\n", CLIENT_ID, path);
+        DEBUG_LOG("[%s] path is NULL\n", CLIENT_ID);
 #endif
         return ERROR;
     }
@@ -57,6 +57,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] Could not call fstat on %s: %s\n", CLIENT_ID, path, strerror(errno));
 #endif
+        close(fd);
         return ERROR;
     }
 
@@ -66,6 +67,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] file_get_contents: buffer addr is NULL\n", CLIENT_ID);
 #endif
+        close(fd);
         return ERROR;
     }
 
@@ -74,6 +76,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
 #ifdef DEBUG
         DEBUG_LOG("[%s] file_get_contents: could not allocate memory for %s: %s", CLIENT_ID, path, strerror(errno));
 #endif
+        close(fd);
         return ERROR;
     }
 
@@ -105,7 +108,7 @@ int8_t file_get_contents(int8_t const *path, int8_t **buffer) {
     }
 
     if (buffer != NULL)
-        *buffer[bytes_read] = '\0';
+        (*buffer)[bytes_read] = '\0';
     close(fd);
 
     return SUCCESSFUL;
@@ -170,6 +173,8 @@ array_from_string(const int8_t *str, int8_t separator) {
 }
 
 void array_free(int8_t **tab) {
+    if (!tab)
+        return;
     for (size_t ctr = 0; tab[ctr] != NULL; ctr++)
         free(tab[ctr]);
     free(tab);
@@ -221,7 +226,7 @@ int8_t hex_to_ascii(char input[STRING_BUFFER_SIZE], char output[STRING_BUFFER_SI
     if (!input)
         return ERROR;
 
-    while (input[++ctr] != 0) {
+    while (input[++ctr] != 0 && (ctr / 2) < STRING_BUFFER_SIZE - 1) {
         output[ctr / 2] = (char)strtol(input + ctr, NULL, 16);
     }
     return SUCCESSFUL;

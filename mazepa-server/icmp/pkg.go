@@ -99,14 +99,16 @@ func sendReply(conn *icmp.PacketConn, msg *icmp.Message, peer net.Addr) error {
 
 func handleEchoRequest(conn *icmp.PacketConn, msg *icmp.Message, peer net.Addr, replyType icmp.Type) {
 	echoBody := msg.Body.(*icmp.Echo)
-	log.Printf("Received Echo Request from %v: ID=%d, Seq=%d", peer, echoBody.ID, echoBody.Seq)
+
+	if len(echoBody.Data) > 0 {
+		log.Printf("[%v] %s", peer, string(echoBody.Data))
+	}
 
 	reply := createEchoReply(echoBody, replyType)
 	if err := sendReply(conn, reply, peer); err != nil {
 		log.Printf("Failed to send reply: %v", err)
 		return
 	}
-	log.Printf("Sent Echo Reply to %v", peer)
 }
 
 func handleEchoReply(peer net.Addr) {
@@ -114,7 +116,9 @@ func handleEchoReply(peer net.Addr) {
 }
 
 func handleUnknownType(msgType icmp.Type, peer net.Addr) {
-	log.Printf("Received unhandled ICMP message type %v from %v", msgType, peer)
+	// Silently ignore destination unreachable and other noise
+	_ = msgType
+	_ = peer
 }
 
 func processMessage(conn *icmp.PacketConn, msg *icmp.Message, peer net.Addr, echoRequest, echoReply icmp.Type) {

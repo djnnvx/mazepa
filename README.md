@@ -1,5 +1,7 @@
 ~ simple linux keylogger
 
+> demo avaiable here: https://youtu.be/oR3cMLIxDhE
+
 # 1. disclaimer
 
 in practice, this software _will_ be detected. you wont get any use from deploying
